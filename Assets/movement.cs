@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class movement : MonoBehaviour
 {
@@ -9,13 +10,6 @@ public class movement : MonoBehaviour
     [SerializeField]float JumpForce = 35;
     [SerializeField] float MovementSpeed = 12;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
     void Update()
     {
        
