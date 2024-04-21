@@ -8,7 +8,8 @@
 - Dino
 - Cactus
 - Clouds
-
+- Sun
+- Fun
 
 ## Building the project:
 To build Libro-Negro you need to have Unity installed.
