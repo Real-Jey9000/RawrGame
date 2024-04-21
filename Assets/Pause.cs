@@ -5,21 +5,20 @@ using UnityEngine;
 public class Pause : MonoBehaviour
 {
     [SerializeField] GameObject Canvas;
+    [SerializeField] GameObject CanvasDeath;
+
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (!Canvas.activeSelf)
+            if (Input.GetKeyDown(KeyCode.Escape)&&!CanvasDeath.activeSelf)
             {
-                Canvas.SetActive(true);
-                Time.timeScale = 0;
+            
+                if (!Canvas.activeSelf)
+                {
+                    Canvas.SetActive(true);
+                    Time.timeScale = 0;
+                }
             }
-            else
-            {
-                Unpause();
-            }
-        }
     }
     private void Start()
     {

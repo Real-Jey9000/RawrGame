@@ -9,6 +9,7 @@ public class movement : MonoBehaviour
     [SerializeField]bool Grounded = true;
     [SerializeField]float JumpForce = 35;
     [SerializeField] float MovementSpeed = 12;
+    [SerializeField] AudioSource SprungSound;
 
     void Update()
     {
@@ -16,6 +17,7 @@ public class movement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.W) && Grounded)
         {
            gameObject.GetComponent<Rigidbody2D>().AddForce(Vector2.up * JumpForce,ForceMode2D.Impulse);
+            SprungSound.Play();
         }
         transform.Translate(Vector2.right * Time.deltaTime * MovementSpeed);
     }

@@ -7,7 +7,7 @@ public class Spawner : MonoBehaviour
 {
     [SerializeField] GameObject Player;
     [SerializeField] GameObject Rawr;
-    [SerializeField] Vector2 LarstRawrSpawrnPors;
+    [SerializeField] Vector3 LarstRawrSpawrnPors;
     [SerializeField] float DistanceTilRawr;
     [SerializeField] float Max, Min;
     
