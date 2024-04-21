@@ -1,5 +1,5 @@
  <p align="center">
-    ![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
+    ![alt text](https://github.com/Real-Jey9000/Libro-Negro/blob/main/Assets/download.png?raw=true)
  </p>
  <h1  align="center">Libro-Negro</h1>
 
