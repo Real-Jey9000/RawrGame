@@ -9,6 +9,9 @@
 - Dino
 - Cactus
 - Clouds
+- Music
+- Dead Bushes
+- Pyramids
 - Sun
 - Fun
 
