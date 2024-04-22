@@ -14,10 +14,10 @@ public class movement : MonoBehaviour
     void Update()
     {
        
-        if (Input.GetKeyDown(KeyCode.W) && Grounded)
+        if (Input.GetKeyDown(KeyCode.W) && Grounded && Time.timeScale == 1)
         {
            gameObject.GetComponent<Rigidbody2D>().AddForce(Vector2.up * JumpForce,ForceMode2D.Impulse);
-            SprungSound.Play();
+           SprungSound.Play();
         }
         transform.Translate(Vector2.right * Time.deltaTime * MovementSpeed);
     }
