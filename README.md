@@ -1,7 +1,7 @@
  <p align="center">
-![Cactus](https://github.com/Real-Jey9000/Libro-Negro/assets/167660150/60c87972-14ec-426e-898c-0b880bd2ca3f)
-
+    <img src="[https://raw.githubusercontent.com/devicons/devicon/master/icons/java/java-original-wordmark.svg](https://github.com/Real-Jey9000/Libro-Negro/blob/main/Assets/download.png)" height="150px" width="auto" alt="CACTUS">
  </p>
+ 
  <h1  align="center">Libro-Negro</h1>
 
 
