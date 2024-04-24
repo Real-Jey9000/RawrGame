@@ -15,16 +15,21 @@ public class Pause : MonoBehaviour
             
                 if (!Canvas.activeSelf)
                 {
-                    Canvas.SetActive(true);
-                    Time.timeScale = 0;
-                }
+                    PauseGame();
+                }else
+                    Unpause();
             }
     }
     private void Start()
     {
-        Canvas.SetActive(false);
+        Unpause();
     }
 
+    public void PauseGame()
+    {
+        Canvas.SetActive(true);
+        Time.timeScale = 0;
+    }
     public void Unpause ()
     {
         Canvas.SetActive(false);
