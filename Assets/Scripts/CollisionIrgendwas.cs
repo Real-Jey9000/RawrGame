@@ -13,7 +13,7 @@ public class CollisionIrgendwas : MonoBehaviour
             Canvas.SetActive (true);
             Time.timeScale = 0;
             TodHalt.Play();
-            gameObject.GetComponent<Save>().SaveFile();
+            gameObject.GetComponent<Save>().SaveScore();
         }
     }
     private void Start()

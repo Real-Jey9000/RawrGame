@@ -1306,7 +1306,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c169101120c9b24daaf9ae895462681, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  volumeSlider: {fileID: 925277643}
 --- !u!114 &925277643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1887,7 +1886,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Player: {fileID: 0}
-  Score: {fileID: 1548496706}
+  HighScore: {fileID: 1548496706}
 --- !u!114 &1548496706
 MonoBehaviour:
   m_ObjectHideFlags: 0

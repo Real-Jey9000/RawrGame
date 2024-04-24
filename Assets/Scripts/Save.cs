@@ -9,41 +9,28 @@ using UnityEngine.SocialPlatforms.Impl;
 public class Save : MonoBehaviour
 {
     [SerializeField] GameObject Player;
-    [SerializeField] TMP_Text Score;
-    string path = Application.dataPath + "/High-Score.txt";
+    [SerializeField] TMP_Text HighScore;
     private void Start()
     {
-        if (Score != null)
+        if (HighScore != null)
         {
             SetScore();
         }
-        if (!File.Exists(path))
-        {
-            File.Create(path);
-        }
     }
-    public void SaveFile()
-    {
-        if (LoadFile() >= Player.transform.position.x)
-            return;
-        using (StreamWriter writer = new StreamWriter(path))
-        {
-            writer.Write(Mathf.Round(Player.transform.position.x));
-        }
-    }
-    public int LoadFile()
-    {
-        int loadedScore;
 
-        using (StreamReader reader = new StreamReader(path))
-        {
-            string score = reader.ReadToEnd();
-            int.TryParse(score, out loadedScore);
-        }
-        return loadedScore;
+    public void SaveScore()
+    {
+        if((int)Mathf.Round(Player.transform.position.x) > LoadScore())
+            PlayerPrefs.SetInt("Highscore", (int)Mathf.Round(Player.transform.position.x));
     }
+
+    public int LoadScore()
+    {
+        return PlayerPrefs.GetInt("Highscore");
+    }
+
     public void SetScore()
     {
-        Score.text = LoadFile().ToString();
+        HighScore.text = LoadScore().ToString();
     }
 }

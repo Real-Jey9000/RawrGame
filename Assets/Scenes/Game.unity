@@ -970,7 +970,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c169101120c9b24daaf9ae895462681, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  volumeSlider: {fileID: 483873619}
 --- !u!1 &486840205
 GameObject:
   m_ObjectHideFlags: 0
@@ -2478,7 +2477,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Player: {fileID: 920738569}
-  Score: {fileID: 0}
+  HighScore: {fileID: 0}
 --- !u!1 &996656060
 GameObject:
   m_ObjectHideFlags: 0
@@ -4161,7 +4160,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c169101120c9b24daaf9ae895462681, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  volumeSlider: {fileID: 1997488332}
 --- !u!114 &1997488332
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4342,8 +4340,8 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 573454727}
-  - {fileID: 920738572}
   - {fileID: 1187173653}
+  - {fileID: 920738572}
   - {fileID: 240553357}
   - {fileID: 639130700}
   - {fileID: 486840208}
