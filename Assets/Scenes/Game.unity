@@ -652,8 +652,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4279435028
-  m_fontColor: {r: 0.07667351, g: 1, b: 0.07075471, a: 1}
+    rgba: 4278689238
+  m_fontColor: {r: 0.8396226, g: 0.6171998, b: 0.027723404, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1123,8 +1123,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 508233547}
-        m_TargetAssemblyTypeName: Quit, Assembly-CSharp
-        m_MethodName: OnApplicationQuit
+        m_TargetAssemblyTypeName: ReturnToMainMenu, Assembly-CSharp
+        m_MethodName: MainMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1181,7 +1181,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 508233542}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0edb002d18157654e8dbd33e6e099d6c, type: 3}
+  m_Script: {fileID: 11500000, guid: bfe598bd33a564649a9382e6c42eb164, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &509908185
@@ -1657,8 +1657,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4279435028
-  m_fontColor: {r: 0.07667351, g: 1, b: 0.07075471, a: 1}
+    rgba: 4279082454
+  m_fontColor: {r: 0.83921576, g: 0.6156863, b: 0.050980397, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -3200,9 +3200,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Quit
-
-'
+  m_text: Main Menu
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7cba507788a5909429054d282ed7a9e5, type: 2}
   m_sharedMaterial: {fileID: -2083891839789599871, guid: 7cba507788a5909429054d282ed7a9e5, type: 2}
@@ -3229,8 +3227,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 16
-  m_fontSizeBase: 16
+  m_fontSize: 15
+  m_fontSizeBase: 15
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 0
@@ -3882,9 +3880,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Quit
-
-'
+  m_text: Main Menu
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 7cba507788a5909429054d282ed7a9e5, type: 2}
   m_sharedMaterial: {fileID: -2083891839789599871, guid: 7cba507788a5909429054d282ed7a9e5, type: 2}
@@ -3911,8 +3907,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 16
-  m_fontSizeBase: 16
+  m_fontSize: 15
+  m_fontSizeBase: 15
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 0
@@ -4046,8 +4042,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1854735336}
-        m_TargetAssemblyTypeName: Quit, Assembly-CSharp
-        m_MethodName: OnApplicationQuit
+        m_TargetAssemblyTypeName: ReturnToMainMenu, Assembly-CSharp
+        m_MethodName: MainMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4104,7 +4100,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1854735331}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0edb002d18157654e8dbd33e6e099d6c, type: 3}
+  m_Script: {fileID: 11500000, guid: bfe598bd33a564649a9382e6c42eb164, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1997488329
