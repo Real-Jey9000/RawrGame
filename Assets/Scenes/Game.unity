@@ -503,7 +503,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: f4c79d371accf0543b97962728128951, type: 3}
-  m_Color: {r: 0.735849, g: 0.55307615, b: 0.28114986, a: 1}
+  m_Color: {r: 0.8113208, g: 0.6205984, b: 0.34060165, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1740,6 +1740,9 @@ GameObject:
   - component: {fileID: 639130705}
   - component: {fileID: 639130704}
   - component: {fileID: 639130703}
+  - component: {fileID: 639130708}
+  - component: {fileID: 639130707}
+  - component: {fileID: 639130706}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1765,6 +1768,7 @@ MonoBehaviour:
   DistanceTilRawr: 25
   Max: 60
   Min: 25
+  DistanceToPlayer: 300
 --- !u!4 &639130700
 Transform:
   m_ObjectHideFlags: 0
@@ -1795,9 +1799,10 @@ MonoBehaviour:
   Player: {fileID: 920738569}
   Rawr: {fileID: 928057215264160064, guid: db6d08e644ed46749a9375473ad91dfb, type: 3}
   LarstRawrSpawrnPors: {x: 0, y: 2.9, z: 0}
-  DistanceTilRawr: 30
+  DistanceTilRawr: 25
   Max: 50
   Min: 25
+  DistanceToPlayer: 110
 --- !u!114 &639130702
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1816,6 +1821,7 @@ MonoBehaviour:
   DistanceTilRawr: 30
   Max: 40
   Min: 25
+  DistanceToPlayer: 100
 --- !u!114 &639130703
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1834,6 +1840,7 @@ MonoBehaviour:
   DistanceTilRawr: 40
   Max: 100
   Min: 50
+  DistanceToPlayer: 130
 --- !u!114 &639130704
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1849,9 +1856,10 @@ MonoBehaviour:
   Player: {fileID: 920738569}
   Rawr: {fileID: 110932893240925853, guid: 2baac0bf9f36b174abbfa7244f47da45, type: 3}
   LarstRawrSpawrnPors: {x: 0, y: -4.4, z: 0}
-  DistanceTilRawr: 30
+  DistanceTilRawr: 25
   Max: 55
-  Min: 35
+  Min: 25
+  DistanceToPlayer: 140
 --- !u!114 &639130705
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1869,7 +1877,65 @@ MonoBehaviour:
   LarstRawrSpawrnPors: {x: 0, y: -5.18, z: 0}
   DistanceTilRawr: 30
   Max: 55
-  Min: 35
+  Min: 20
+  DistanceToPlayer: 120
+--- !u!114 &639130706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 639130698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54622a8c198452b47895b448c8aa47b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Player: {fileID: 920738569}
+  Rawr: {fileID: 5955596628321847411, guid: d99b984d0fd1a7b4c8ca011ea85d8cae, type: 3}
+  LarstRawrSpawrnPors: {x: 0, y: -5.3, z: 0}
+  DistanceTilRawr: 15
+  Max: 30
+  Min: 15
+  DistanceToPlayer: 120
+--- !u!114 &639130707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 639130698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54622a8c198452b47895b448c8aa47b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Player: {fileID: 920738569}
+  Rawr: {fileID: 7452594402994114347, guid: 78e62716217d85145877416a244c35df, type: 3}
+  LarstRawrSpawrnPors: {x: 0, y: -5, z: 0}
+  DistanceTilRawr: 15
+  Max: 30
+  Min: 15
+  DistanceToPlayer: 110
+--- !u!114 &639130708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 639130698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54622a8c198452b47895b448c8aa47b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Player: {fileID: 920738569}
+  Rawr: {fileID: 6897637835549560425, guid: 7a76e4da085dba04e9a063ff525fc004, type: 3}
+  LarstRawrSpawrnPors: {x: 0, y: -4.5, z: 0}
+  DistanceTilRawr: 15
+  Max: 30
+  Min: 15
+  DistanceToPlayer: 100
 --- !u!1 &847358372
 GameObject:
   m_ObjectHideFlags: 0
