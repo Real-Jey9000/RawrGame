@@ -10,10 +10,14 @@ public class movement : MonoBehaviour
     [SerializeField]float JumpForce = 35;
     [SerializeField] float MovementSpeed = 12;
     [SerializeField] AudioSource SprungSound;
+    float speeddazugewinnung = 0.05f;
 
     void Update()
     {
-       
+        if (MovementSpeed < 69)
+        {
+            MovementSpeed += speeddazugewinnung * Time.deltaTime;
+        }
         if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.Space))
         {
             if (Grounded && Time.timeScale == 1)
