@@ -1,3 +1,4 @@
+using Dan.Main;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -21,9 +22,11 @@ public class Save : MonoBehaviour
     public void SaveScore()
     {
         if((int)Mathf.Round(Player.transform.position.x) > LoadScore())
+        {
             PlayerPrefs.SetInt("Highscore", (int)Mathf.Round(Player.transform.position.x));
+            Leaderboard.SetLeaderboardEntry();
+        }
     }
-
     public int LoadScore()
     {
         return PlayerPrefs.GetInt("Highscore");
@@ -31,6 +34,6 @@ public class Save : MonoBehaviour
 
     public void SetScore()
     {
-        HighScore.text = LoadScore().ToString();
+        HighScore.text = "High-Score: " + LoadScore().ToString();
     }
 }
