@@ -1,5 +1,5 @@
  <p align="center">
-    <img src="Assets/download.png" height="150px" width="auto" alt="CACTUS">
+    <img src="Assets/Sprites/Cactus.png" height="150px" width="auto" alt="CACTUS">
  </p>
  
  <h1  align="center">RawrGame</h1>
