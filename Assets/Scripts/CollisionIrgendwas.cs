@@ -5,6 +5,8 @@ using UnityEngine;
 public class CollisionIrgendwas : MonoBehaviour
 {
     [SerializeField] GameObject Canvas;
+    [SerializeField] AudioClip[] TodClips;
+    [SerializeField] AudioClip[] TodClipsRare;
     [SerializeField] AudioSource TodHalt;
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -12,6 +14,11 @@ public class CollisionIrgendwas : MonoBehaviour
         {
             Canvas.SetActive (true);
             Time.timeScale = 0;
+            if(Random.value < 0.9)
+                TodHalt.clip = TodClips[Random.Range(0, TodClips.Length)];
+            else
+                TodHalt.clip = TodClipsRare[Random.Range(0, TodClipsRare.Length)];
+
             TodHalt.Play();
             gameObject.GetComponent<Save>().SaveScore();
         }

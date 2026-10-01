@@ -24,7 +24,10 @@ public class Save : MonoBehaviour
         if((int)Mathf.Round(Player.transform.position.x) > LoadScore())
         {
             PlayerPrefs.SetInt("Highscore", (int)Mathf.Round(Player.transform.position.x));
-            Leaderboard.SetLeaderboardEntry();
+            Leaderboard.SetLeaderboardEntry(() =>
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(1);
+            });
         }
     }
     public int LoadScore()

@@ -20,8 +20,10 @@ public class Play : MonoBehaviour
         if (ChecknameTMP(nameTMP.text))
         {
             PlayerPrefs.SetString("UserName", nameTMP.text);
-            Leaderboard.SetLeaderboardEntry();
-            SceneManager.LoadSceneAsync(1);
+            Leaderboard.SetLeaderboardEntry(() =>
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(1);
+            });
         }
         else
         {
