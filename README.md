@@ -13,6 +13,7 @@
 - Dead Bushes
 - Pyramids
 - Sun
+- Moon
 - Fun
 
 ## Building the project:
