@@ -1,8 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
+
 
 public class Play : MonoBehaviour
 {
@@ -39,8 +42,9 @@ public class Play : MonoBehaviour
         foreach (char c in str)
         {
             if (c != ' ')
-                return true;
+                return !ProfanityFilter.IsInappropriate(str);
         }
         return false;
     }
+
 }

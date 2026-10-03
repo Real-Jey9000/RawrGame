@@ -4780,7 +4780,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a494215d9f330e1479d9ebab5e24d613, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leaderboardKey: 36909
+  leaderboardKey: 36941
   names:
   - {fileID: 296851242}
   - {fileID: 1424333465}

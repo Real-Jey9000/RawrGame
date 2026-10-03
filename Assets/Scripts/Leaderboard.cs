@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,7 +18,6 @@ public class Leaderboard : MonoBehaviour
     [SerializeField] private Color defaultColor = Color.white;
 
     private static string activeLeaderboardKey;
-    private static int loggedInPlayerId = -1;
 
     private void Awake()
     {
@@ -26,32 +26,30 @@ public class Leaderboard : MonoBehaviour
 
     private void Start()
     {
-        // LootLocker requires an active authenticated session
         StartSession();
+    }
 
+    public static string GetOrCreatePlayerId()
+    {
+        string uniqueId = PlayerPrefs.GetString("Persistent_PlayerID", string.Empty);
+        if (string.IsNullOrEmpty(uniqueId))
+        {
+            uniqueId = Guid.NewGuid().ToString();
+            PlayerPrefs.SetString("Persistent_PlayerID", uniqueId);
+            PlayerPrefs.Save();
+        }
+        return uniqueId;
     }
 
     private void StartSession()
     {
-        LootLockerSDKManager.StartGuestSession((response) =>
+        string persistentId = GetOrCreatePlayerId();
+
+        LootLockerSDKManager.StartGuestSession(persistentId, (response) =>
         {
             if (response.success)
             {
-                loggedInPlayerId = response.player_id;
-
-                // Set the player's display name if saved in PlayerPrefs
-                string savedName = PlayerPrefs.GetString("UserName", "");
-                if (!string.IsNullOrEmpty(savedName))
-                {
-                    LootLockerSDKManager.SetPlayerName(savedName, (nameResponse) =>
-                    {
-                        GetLeaderboard();
-                    });
-                }
-                else
-                {
-                    GetLeaderboard();
-                }
+                GetLeaderboard();
             }
             else
             {
@@ -63,6 +61,7 @@ public class Leaderboard : MonoBehaviour
     public void GetLeaderboard()
     {
         int countToFetch = Mathf.Min(names.Count, scores.Count);
+        string myPlayerId = GetOrCreatePlayerId();
 
         LootLockerSDKManager.GetScoreList(activeLeaderboardKey, countToFetch, 0, (response) =>
         {
@@ -72,15 +71,12 @@ public class Leaderboard : MonoBehaviour
                 return;
             }
 
-            // 1. Guard against null items array (empty leaderboard)
             LootLockerLeaderboardMember[] items = response.items ?? new LootLockerLeaderboardMember[0];
 
             for (int i = 0; i < countToFetch; i++)
             {
-                // Skip if the TMP_Text component in the Inspector is unassigned
                 if (names[i] == null || scores[i] == null)
                 {
-                    Debug.LogWarning($"[Leaderboard] Slot index {i} in names or scores list is not assigned in the Inspector.");
                     continue;
                 }
 
@@ -88,23 +84,21 @@ public class Leaderboard : MonoBehaviour
                 {
                     var member = items[i];
 
-                    // 2. Safe check on player object and name
-                    string displayName;
-                    bool isMine = false;
+                    string displayName = ParseDisplayNameFromMetadata(member.metadata);
 
-                    if (member.player != null)
+                    if (string.IsNullOrEmpty(displayName))
                     {
-                        displayName = !string.IsNullOrEmpty(member.player.name)
-                            ? member.player.name
-                            : $"Player {member.player.id}";
+                        if (member.player != null && !string.IsNullOrEmpty(member.player.name))
+                        {
+                            displayName = member.player.name;
+                        }
+                        else
+                        {
+                            displayName = $"Player #{member.rank}";
+                        }
+                    }
 
-                        isMine = (member.player.id == loggedInPlayerId);
-                    }
-                    else
-                    {
-                        // Fall back to member rank/score if player info is absent
-                        displayName = $"Player #{member.rank}";
-                    }
+                    bool isMine = (member.member_id == myPlayerId);
 
                     names[i].text = displayName;
                     scores[i].text = member.score.ToString();
@@ -115,7 +109,6 @@ public class Leaderboard : MonoBehaviour
                 }
                 else
                 {
-                    // Clear unused slots
                     names[i].text = "-";
                     scores[i].text = "-";
                     names[i].color = defaultColor;
@@ -125,23 +118,62 @@ public class Leaderboard : MonoBehaviour
         });
     }
 
+    private static string ParseDisplayNameFromMetadata(string rawMetadata)
+    {
+        if (string.IsNullOrEmpty(rawMetadata)) return string.Empty;
+
+        try
+        {
+            // Versucht JSON auszulesen: {"name":"...","version":"...","date":"..."}
+            LeaderboardMetadata data = JsonUtility.FromJson<LeaderboardMetadata>(rawMetadata);
+            if (data != null && !string.IsNullOrEmpty(data.name))
+            {
+                return data.name;
+            }
+        }
+        catch
+        {
+            // Falls alte Einträge reiner Klartext ohne JSON waren
+        }
+
+        return rawMetadata;
+    }
+
     public static void SetLeaderboardEntry(System.Action onComplete = null)
     {
         int score = PlayerPrefs.GetInt("Highscore", 0);
+        string persistentId = GetOrCreatePlayerId();
+        string currentName = PlayerPrefs.GetString("UserName", "Player");
 
-        LootLockerSDKManager.SubmitScore("", score, activeLeaderboardKey, (response) =>
+        LeaderboardMetadata metadataObject = new LeaderboardMetadata
+        {
+            name = currentName,
+            version = Application.version,
+            date = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
+        };
+
+        string metadataJson = JsonUtility.ToJson(metadataObject);
+
+        LootLockerSDKManager.SubmitScore(persistentId, score, activeLeaderboardKey, metadataJson, (response) =>
         {
             if (response.success)
             {
-                Debug.Log("Score successfully submitted.");
+                Debug.Log("Score and metadata successfully submitted.");
             }
             else
             {
                 Debug.LogError($"Failed to submit score: {response.errorData?.message}");
             }
 
-            // Proceed to next action/scene only after LootLocker answers
             onComplete?.Invoke();
         });
+    }
+
+    [Serializable]
+    private class LeaderboardMetadata
+    {
+        public string name;
+        public string version;
+        public string date;
     }
 }
