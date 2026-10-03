@@ -18,6 +18,7 @@ public class Leaderboard : MonoBehaviour
     [SerializeField] private Color defaultColor = Color.white;
 
     private static string activeLeaderboardKey;
+    private static int loggedInPlayerId = -1; // Speichert die LootLocker-ID der Session
 
     private void Awake()
     {
@@ -49,6 +50,7 @@ public class Leaderboard : MonoBehaviour
         {
             if (response.success)
             {
+                loggedInPlayerId = response.player_id; // Session-Player-ID sichern
                 GetLeaderboard();
             }
             else
@@ -98,7 +100,17 @@ public class Leaderboard : MonoBehaviour
                         }
                     }
 
-                    bool isMine = (member.member_id == myPlayerId);
+                    // Robuster Check: prüft sowohl die interne Player-ID als auch den member_id String
+                    bool isMine = false;
+                    if (member.player != null && member.player.id != 0 && loggedInPlayerId != -1)
+                    {
+                        isMine = (member.player.id == loggedInPlayerId);
+                    }
+                    if (!isMine)
+                    {
+                        isMine = (member.member_id == myPlayerId ||
+                                 (loggedInPlayerId != -1 && member.member_id == loggedInPlayerId.ToString()));
+                    }
 
                     names[i].text = displayName;
                     scores[i].text = member.score.ToString();
@@ -124,7 +136,6 @@ public class Leaderboard : MonoBehaviour
 
         try
         {
-            // Versucht JSON auszulesen: {"name":"...","version":"...","date":"..."}
             LeaderboardMetadata data = JsonUtility.FromJson<LeaderboardMetadata>(rawMetadata);
             if (data != null && !string.IsNullOrEmpty(data.name))
             {
@@ -133,7 +144,6 @@ public class Leaderboard : MonoBehaviour
         }
         catch
         {
-            // Falls alte Einträge reiner Klartext ohne JSON waren
         }
 
         return rawMetadata;

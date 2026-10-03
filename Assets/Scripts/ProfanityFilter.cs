@@ -34,7 +34,7 @@ public static class ProfanityFilter
             "nigg", "n1gg", "niga", "nigga", "nigger", "kike", "chink", "spic", "fag", "faggot",
             "schwuchtel", "tranny",
 
-            "hitler", "nazi", "swastika", "hakenkreuz", "ss-", "holocaust", "auschwitz",
+            "hitler", "nazi", "swastika", "hakenkreuz", "holocaust", "auschwitz",
 
             "pedophil", "paedophil", "rape", "vergewaltig", "childporn", "cp",
 
@@ -46,7 +46,7 @@ public static class ProfanityFilter
         AddExactWords(new[]
         {
             // Deutsch
-            "nutte", "schlampe", "wichser", "wichs", "penner", "idiot", "spacko", "vollidiot",
+            "nutte", "schlampe", "wichser", "wichs", "penner", "idiot", "spacko", "vollidiot", "ss-",
             "arsch", "scheisse", "scheiﬂe", "kacke", "fick", "ficken", "sau", "depp", "trottel",
             "pimmel", "schwanz", "muschi", "titten", "fresse", "nega", "neger", "-",
 
