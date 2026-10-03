@@ -133,11 +133,11 @@ public class Leaderboard : MonoBehaviour
         {
             if (response.success)
             {
-                Debug.Log("[LootLocker] Score successfully submitted.");
+                Debug.Log("Score successfully submitted.");
             }
             else
             {
-                Debug.LogError($"[LootLocker] Failed to submit score: {response.errorData?.message}");
+                Debug.LogError($"Failed to submit score: {response.errorData?.message}");
             }
 
             // Proceed to next action/scene only after LootLocker answers

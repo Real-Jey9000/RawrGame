@@ -15,7 +15,7 @@ MonoBehaviour:
   apiKey: dev_33a2a89d0498466bb5033b6acfda91e6
   adminToken: 13c6ed25c101c33ff7857a20f2e6ecacbc15b904071d561861143b80fb45a059
   domainKey: ih6m8917
-  game_version: 1.2.0
+  game_version: 1.3
   sdk_version: 8.2.0
   logLevel: 2
   prettifyJson: 1
