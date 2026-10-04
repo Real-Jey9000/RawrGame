@@ -97,10 +97,21 @@ public class CollisionIrgendwas : MonoBehaviour
     {
         TriggerDeathVisuals();
 
+        // 1. Erst auf diesem GameObject suchen, wenn nicht da -> überall in der Szene suchen
         Save saveComp = GetComponent<Save>();
+        if (saveComp == null)
+        {
+            saveComp = FindObjectOfType<Save>();
+        }
+
         if (saveComp != null)
         {
+            Debug.Log("[CollisionIrgendwas] Rufe SaveScore() auf...");
             saveComp.SaveScore();
+        }
+        else
+        {
+            Debug.LogError("[CollisionIrgendwas] FEHLER: Kein Save-Skript in der Szene gefunden!");
         }
     }
 

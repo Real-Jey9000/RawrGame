@@ -1,11 +1,12 @@
 using UnityEngine;
 using TMPro;
 using Photon.Pun;
+using ExitGames.Client.Photon;
 
 public class Save : MonoBehaviour
 {
     [Header("Mode")]
-    [Tooltip("Haken AN = Multiplayer-Highscore (HighscoreMulti). Haken AUS = Solo-Highscore (Highscore).")]
+    [Tooltip("Haken AN = Multiplayer. Haken AUS = Solo.")]
     [SerializeField] private bool isMultiplayer = false;
 
     [Header("References")]
@@ -19,13 +20,21 @@ public class Save : MonoBehaviour
 
     private void Awake()
     {
-        // Wenn wir im Solo-Modus sind, aber noch als "InRoom" markiert sind: Raum sofort verlassen!
+        // 1. Lokalen Namen an Photon übergeben
+        string localName = PlayerPrefs.GetString("UserName", "Player");
+        PhotonNetwork.NickName = localName;
+
+        // 2. Eigene LootLocker-PlayerID in Photons CustomProperties teilen
+        string myLootLockerId = Leaderboard.GetOrCreatePlayerId();
+        Hashtable props = new Hashtable { { "LL_ID", myLootLockerId } };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+
+        // 3. Falls Solo: sicherstellen, dass kein alter Raum aktiv ist
         if (!isMultiplayer && PhotonNetwork.InRoom)
         {
             PhotonNetwork.LeaveRoom();
         }
 
-        // Sicherstellen, dass das Spiel nicht pausiert startet
         Time.timeScale = 1f;
     }
 
@@ -45,16 +54,13 @@ public class Save : MonoBehaviour
         {
             PlayerPrefs.SetInt(CurrentKey, currentScore);
             PlayerPrefs.Save();
-
-            // Nur Solo ins Leaderboard eintragen
-            if (!isMultiplayer)
-            {
-                Leaderboard.SetLeaderboardEntry(() =>
-                {
-                    UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(1);
-                });
-            }
         }
+
+        Leaderboard.SubmitRunScore(currentScore, isMultiplayer, () =>
+        {
+            Debug.Log("[Save] Upload abgeschlossen. Jetzt darf die Szene gewechselt werden!");
+            // UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(0);
+        });
     }
 
     public int LoadScore()
