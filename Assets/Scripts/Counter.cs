@@ -1,13 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
+using TMPro;
 
 public class Counter : MonoBehaviour
 {
-    [SerializeField] TMP_Text Score;
+    [SerializeField] private TMP_Text Score;
+    [SerializeField] private GameObject targetOverride;
+
     private void Update()
     {
-       Score.text = Mathf.Round(transform.position.x).ToString();
+        if (Score == null) return;
+
+        if (targetOverride != null)
+        {
+            Score.text = Mathf.Round(targetOverride.transform.position.x).ToString();
+        }
+        else if (GameRunnerAnchor.Instance != null)
+        {
+            Score.text = Mathf.Round(GameRunnerAnchor.Instance.transform.position.x).ToString();
+        }
     }
 }

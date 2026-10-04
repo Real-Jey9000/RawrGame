@@ -1,15 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
+using TMPro;
+using Photon.Pun;
 
 public class Save : MonoBehaviour
 {
-    [SerializeField] GameObject Player;
-    [SerializeField] TMP_Text HighScore;
+    [SerializeField] private GameObject Player;
+    [SerializeField] private TMP_Text HighScore;
+
+    private const string KEY_SINGLE = "Highscore";
+    private const string KEY_MULTI = "HighscoreMulti";
+
+    private string CurrentKey => PhotonNetwork.InRoom ? KEY_MULTI : KEY_SINGLE;
+
     private void Start()
     {
         if (HighScore != null)
@@ -20,22 +22,45 @@ public class Save : MonoBehaviour
 
     public void SaveScore()
     {
-        if((int)Mathf.Round(Player.transform.position.x) > LoadScore())
+        int currentScore = GetCurrentDistance();
+
+        if (currentScore > LoadScore())
         {
-            PlayerPrefs.SetInt("Highscore", (int)Mathf.Round(Player.transform.position.x));
-            Leaderboard.SetLeaderboardEntry(() =>
+            PlayerPrefs.SetInt(CurrentKey, currentScore);
+            PlayerPrefs.Save();
+
+            if (!PhotonNetwork.InRoom)
             {
-                UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(1);
-            });
+                Leaderboard.SetLeaderboardEntry(() =>
+                {
+                    UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(1);
+                });
+            }
         }
     }
+
     public int LoadScore()
     {
-        return PlayerPrefs.GetInt("Highscore");
+        return PlayerPrefs.GetInt(CurrentKey, 0);
     }
 
     public void SetScore()
     {
         HighScore.text = "High-Score: " + LoadScore().ToString();
+    }
+
+    private int GetCurrentDistance()
+    {
+        if (PhotonNetwork.InRoom && GameRunnerAnchor.Instance != null)
+        {
+            return (int)Mathf.Round(GameRunnerAnchor.Instance.transform.position.x);
+        }
+
+        if (Player != null)
+        {
+            return (int)Mathf.Round(Player.transform.position.x);
+        }
+
+        return 0;
     }
 }

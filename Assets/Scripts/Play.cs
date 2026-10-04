@@ -32,7 +32,21 @@ public class Play : MonoBehaviour
         {
             Error.Play();
         }
-        
+
+    }
+
+    public void PlayCoopGame()
+    {
+        if (ChecknameTMP(nameTMP.text))
+        {
+            PlayerPrefs.SetString("UserName", nameTMP.text);
+            UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(2);
+        }
+        else
+        {
+            Error.Play();
+        }
+
     }
     bool ChecknameTMP(string str)
     {

@@ -1,38 +1,50 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class Pause : MonoBehaviour
 {
-    [SerializeField] GameObject Canvas;
-    [SerializeField] GameObject CanvasDeath;
+    [SerializeField] private GameObject Canvas;
+    [SerializeField] private GameObject CanvasDeath;
 
-
-    private void Update()
-    {
-            if (Input.GetKeyDown(KeyCode.Escape)&&!CanvasDeath.activeSelf)
-            {
-            
-                if (!Canvas.activeSelf)
-                {
-                    PauseGame();
-                }else
-                    Unpause();
-            }
-    }
     private void Start()
     {
         Unpause();
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape) && !CanvasDeath.activeSelf)
+        {
+            if (!Canvas.activeSelf)
+            {
+                PauseGame();
+            }
+            else
+            {
+                Unpause();
+            }
+        }
+    }
+
     public void PauseGame()
     {
         Canvas.SetActive(true);
-        Time.timeScale = 0;
+
+        // Nur im Singleplayer einfrieren
+        if (!PhotonNetwork.InRoom)
+        {
+            Time.timeScale = 0f;
+        }
     }
-    public void Unpause ()
+
+    public void Unpause()
     {
         Canvas.SetActive(false);
-        Time.timeScale = 1;
+
+        // Nur im Singleplayer die Zeit wieder starten
+        if (!PhotonNetwork.InRoom)
+        {
+            Time.timeScale = 1f;
+        }
     }
 }

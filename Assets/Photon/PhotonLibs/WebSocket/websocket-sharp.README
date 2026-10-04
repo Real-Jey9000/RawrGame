@@ -1,0 +1,13 @@
+
+WebSocket/websocket-sharp.dll
+https://github.com/Photon-Client/websocket-sharp    
+
+(c8098b6, 20.08.2026)
+    CHANGED: If proxy server sends a 407, the client always assumes the connection gets closed and uses a new one.
+    ADDED: SetProxy(string url, string username, string password, bool preAuth) to be able to send auth values preemptively.
+
+
+forked from:    https://github.com/sta/websocket-sharp.git          (7aed000, 03.08.2026)
+
+websocket-sharp is provided under MIT License as mentioned here:
+https://github.com/sta/websocket-sharp#license
