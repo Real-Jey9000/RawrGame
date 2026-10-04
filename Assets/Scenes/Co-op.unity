@@ -206,7 +206,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 9146409081787041342}
         m_TargetAssemblyTypeName: Pause, Assembly-CSharp
         m_MethodName: Unpause
         m_Mode: 1
@@ -4612,6 +4612,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a1db6abde62e5144ab27b7d956286d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isMultiplayer: 1
   Player: {fileID: 7191488587943974118}
   HighScore: {fileID: 0}
 --- !u!4 &6017607117581243662

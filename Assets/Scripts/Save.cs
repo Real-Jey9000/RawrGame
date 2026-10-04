@@ -4,13 +4,30 @@ using Photon.Pun;
 
 public class Save : MonoBehaviour
 {
+    [Header("Mode")]
+    [Tooltip("Haken AN = Multiplayer-Highscore (HighscoreMulti). Haken AUS = Solo-Highscore (Highscore).")]
+    [SerializeField] private bool isMultiplayer = false;
+
+    [Header("References")]
     [SerializeField] private GameObject Player;
     [SerializeField] private TMP_Text HighScore;
 
     private const string KEY_SINGLE = "Highscore";
     private const string KEY_MULTI = "HighscoreMulti";
 
-    private string CurrentKey => PhotonNetwork.InRoom ? KEY_MULTI : KEY_SINGLE;
+    private string CurrentKey => isMultiplayer ? KEY_MULTI : KEY_SINGLE;
+
+    private void Awake()
+    {
+        // Wenn wir im Solo-Modus sind, aber noch als "InRoom" markiert sind: Raum sofort verlassen!
+        if (!isMultiplayer && PhotonNetwork.InRoom)
+        {
+            PhotonNetwork.LeaveRoom();
+        }
+
+        // Sicherstellen, dass das Spiel nicht pausiert startet
+        Time.timeScale = 1f;
+    }
 
     private void Start()
     {
@@ -29,7 +46,8 @@ public class Save : MonoBehaviour
             PlayerPrefs.SetInt(CurrentKey, currentScore);
             PlayerPrefs.Save();
 
-            if (!PhotonNetwork.InRoom)
+            // Nur Solo ins Leaderboard eintragen
+            if (!isMultiplayer)
             {
                 Leaderboard.SetLeaderboardEntry(() =>
                 {
@@ -46,12 +64,15 @@ public class Save : MonoBehaviour
 
     public void SetScore()
     {
-        HighScore.text = "High-Score: " + LoadScore().ToString();
+        if (HighScore != null)
+        {
+            HighScore.text = "High-Score: " + LoadScore().ToString();
+        }
     }
 
     private int GetCurrentDistance()
     {
-        if (PhotonNetwork.InRoom && GameRunnerAnchor.Instance != null)
+        if (isMultiplayer && GameRunnerAnchor.Instance != null)
         {
             return (int)Mathf.Round(GameRunnerAnchor.Instance.transform.position.x);
         }

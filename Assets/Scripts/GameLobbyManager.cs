@@ -11,12 +11,12 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
     [SerializeField] private TMP_Text statusText;
 
     [Header("Scene References")]
-    [Tooltip("Optional: Spawner hier reinziehen. Wenn leer, sucht das Skript automatisch alle Spawner in der Szene!")]
+    [Tooltip("Optional: Drag spawners here. If empty, the script automatically finds all spawners in the scene!")]
     [SerializeField] private Spawner[] spawnerList;
     [SerializeField] private Transform ghostSpawnPoint;
 
     [Header("Prefab Settings")]
-    [Tooltip("Exakter Name des Geist-Prefabs im Assets/Resources Ordner")]
+    [Tooltip("Exact name of the ghost prefab inside the Assets/Resources folder")]
     [SerializeField] private string ghostPrefabName = "GhostPrefab";
 
     [Header("Countdown")]
@@ -44,59 +44,57 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
 
     private void StartConnectFlow()
     {
-        // 1. Falls wir noch in einem Raum feststecken: Raum verlassen!
-        // Photon wechselt danach automatisch zum Master-Server und ruft OnConnectedToMaster() auf.
+        // 1. If currently in a room: leave it first!
+        // Photon will automatically route back to MasterServer and invoke OnConnectedToMaster().
         if (PhotonNetwork.InRoom)
         {
-            UpdateStatus("Verlasse vorherigen Raum...");
+            UpdateStatus("Leaving previous room...");
             PhotonNetwork.LeaveRoom();
             return;
         }
 
-        // 2. Sind wir schon auf dem Master-Server und bereit fürs Matchmaking?
+        // 2. Are we already on the MasterServer and ready for matchmaking?
         if (PhotonNetwork.IsConnectedAndReady && PhotonNetwork.Server == ServerConnection.MasterServer)
         {
             OnConnectedToMaster();
             return;
         }
 
-        // 3. Wenn komplett getrennt oder noch nicht initialisiert:
+        // 3. If disconnected or not initialized yet:
         if (PhotonNetwork.NetworkClientState == ClientState.Disconnected ||
             PhotonNetwork.NetworkClientState == ClientState.PeerCreated)
         {
-            UpdateStatus("Verbinde mit Server...");
+            UpdateStatus("Connecting to server...");
             PhotonNetwork.ConnectUsingSettings();
         }
         else
         {
-            UpdateStatus("Warte auf Master-Server...");
+            UpdateStatus("Waiting for Master Server...");
         }
     }
 
-    // Feuert zuverlässig, sobald wir WIRKLICH auf dem Master Server sind (und Räume joinen dürfen)
+    // Fires reliably once we are actually on the MasterServer and permitted to join rooms
     public override void OnConnectedToMaster()
     {
-        UpdateStatus("Suche Raum...");
+        UpdateStatus("Searching for room...");
         PhotonNetwork.JoinRandomRoom();
     }
 
     public override void OnLeftRoom()
     {
-        // Sobald der Game-Server verlassen wurde, schickt Photon uns zurück zum Master-Server.
-        // Falls wir schon auf dem Master Server sind, starten wir direkt:
         if (PhotonNetwork.IsConnectedAndReady && PhotonNetwork.Server == ServerConnection.MasterServer)
         {
             OnConnectedToMaster();
         }
         else
         {
-            UpdateStatus("Kehre zum Master-Server zurück...");
+            UpdateStatus("Returning to Master Server...");
         }
     }
 
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
-        UpdateStatus("Erstelle neuen Raum...");
+        UpdateStatus("Creating new room...");
         RoomOptions options = new RoomOptions
         {
             MaxPlayers = 2,
@@ -117,11 +115,11 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
 
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
         {
-            UpdateStatus("Warte auf Mitspieler...");
+            UpdateStatus("Waiting for other player...");
         }
         else
         {
-            UpdateStatus("Mitspieler gefunden!");
+            UpdateStatus("Player found!");
 
             if (PhotonNetwork.IsMasterClient && !countdownStarted)
             {
@@ -132,7 +130,7 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
-        UpdateStatus("Mitspieler beigetreten!");
+        UpdateStatus("Player joined!");
 
         if (PhotonNetwork.CurrentRoom.PlayerCount >= 2 && PhotonNetwork.IsMasterClient && !countdownStarted)
         {
@@ -158,7 +156,7 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
     [PunRPC]
     private void RPC_UpdateCountdown(int secondsLeft)
     {
-        UpdateStatus($"Spiel startet in {secondsLeft}...");
+        UpdateStatus($"Game starts in {secondsLeft}...");
     }
 
     [PunRPC]
@@ -185,7 +183,7 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         movementGhost.isGameRunning = false;
-        UpdateStatus("Mitspieler hat das Spiel verlassen.");
+        UpdateStatus("Other player left the game.");
     }
 
     private void UpdateStatus(string message)

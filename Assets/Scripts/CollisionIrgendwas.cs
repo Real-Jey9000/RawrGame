@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class CollisionIrgendwas : MonoBehaviour
 {
+    public static CollisionIrgendwas Instance { get; private set; }
+
     [Header("Mode Configuration")]
     [Tooltip("Haken an = Multiplayer mit movementGhost & Respawn. Haken aus = Singleplayer mit direktem Freeze & Canvas.")]
     [SerializeField] private bool isMultiplayer = true;
@@ -11,6 +13,23 @@ public class CollisionIrgendwas : MonoBehaviour
     [SerializeField] private AudioClip[] TodClips;
     [SerializeField] private AudioClip[] TodClipsRare;
     [SerializeField] private AudioSource TodHalt;
+
+    private void Awake()
+    {
+        movementGhost ghost = GetComponent<movementGhost>();
+
+        // Nur als globale Instanz setzen, wenn es der echte Szenen-Spieler ist (kein Geist!)
+        if (ghost == null || ghost.IsMyScenePlayer)
+        {
+            Instance = this;
+        }
+
+        // Automatischer Fallback, falls im Inspector vergessen wurde, das Canvas reinzuziehen
+        if (Canvas == null)
+        {
+            Canvas = FindDeathCanvasInScene();
+        }
+    }
 
     private void Start()
     {
@@ -37,13 +56,7 @@ public class CollisionIrgendwas : MonoBehaviour
 
     private void HandleSingleplayerDeath()
     {
-        if (Canvas != null)
-        {
-            Canvas.SetActive(true);
-        }
-
-        Time.timeScale = 0f;
-
+        TriggerDeathVisuals();
         PlayDeathSound();
 
         Save saveComp = GetComponent<Save>();
@@ -57,7 +70,6 @@ public class CollisionIrgendwas : MonoBehaviour
     {
         movementGhost ghost = GetComponent<movementGhost>();
 
-        // Nur wenn das MEIN echter lokaler Szenen-Spieler ist und er noch lebt
         if (ghost != null && ghost.IsMyScenePlayer && ghost.IsAlive)
         {
             PlayDeathSound();
@@ -81,20 +93,62 @@ public class CollisionIrgendwas : MonoBehaviour
         TodHalt.Play();
     }
 
-    // Wird im Multiplayer aufgerufen, sobald alle Spieler tot sind
     public void TriggerGlobalDeath()
     {
-        if (Canvas != null)
-        {
-            Canvas.SetActive(true);
-        }
-
-        Time.timeScale = 0f;
+        TriggerDeathVisuals();
 
         Save saveComp = GetComponent<Save>();
         if (saveComp != null)
         {
             saveComp.SaveScore();
         }
+    }
+
+    private void TriggerDeathVisuals()
+    {
+        if (Canvas == null)
+        {
+            Canvas = FindDeathCanvasInScene();
+        }
+
+        if (Canvas != null)
+        {
+            Canvas.SetActive(true);
+        }
+        else
+        {
+            Debug.LogError("[CollisionIrgendwas] Konnte in der gesamten Szene kein Canvas finden!", this);
+        }
+
+        Time.timeScale = 0f;
+    }
+
+    private GameObject FindDeathCanvasInScene()
+    {
+        // Sucht alle Canvases in der Szene (auch inaktive)
+        Canvas[] allCanvases = Resources.FindObjectsOfTypeAll<Canvas>();
+        foreach (Canvas c in allCanvases)
+        {
+            // Ignoriere Prefabs im Asset-Ordner, nimm nur Objekte aus der aktiven Szene
+            if (c.gameObject.scene.isLoaded)
+            {
+                // Wenn der Name "Death" oder "GameOver" enthält, haben wir das richtige
+                if (c.gameObject.name.ToLower().Contains("death") || c.gameObject.name.ToLower().Contains("over"))
+                {
+                    return c.gameObject;
+                }
+            }
+        }
+
+        // Not-Fallback: Nimm das erste gefundene Szenen-Canvas
+        foreach (Canvas c in allCanvases)
+        {
+            if (c.gameObject.scene.isLoaded)
+            {
+                return c.gameObject;
+            }
+        }
+
+        return null;
     }
 }
