@@ -36,7 +36,6 @@ public class Leaderboard : MonoBehaviour
 
     private void Awake()
     {
-        // Keys persistent sichern, damit Game-Szenen sie immer auslesen können
         if (!string.IsNullOrEmpty(singleplayerKey))
             PlayerPrefs.SetString("LL_Cached_SingleKey", singleplayerKey);
 
@@ -163,10 +162,28 @@ public class Leaderboard : MonoBehaviour
                             : $"Player #{member.rank}";
                     }
 
+                    // --- HIGHLIGHT CHECK ---
                     bool isMine = false;
-                    if (!string.IsNullOrEmpty(member.member_id) && member.member_id.Contains(myPlayerId))
+
+                    // 1. Session ID Match
+                    if (loggedInPlayerId != -1 && member.player != null && member.player.id == loggedInPlayerId)
                     {
                         isMine = true;
+                    }
+                    // 2. Member ID Match (Team String oder direkte ID)
+                    else if (!string.IsNullOrEmpty(member.member_id) &&
+                            (member.member_id == myPlayerId || member.member_id.Contains(myPlayerId) || member.member_id == loggedInPlayerId.ToString()))
+                    {
+                        isMine = true;
+                    }
+                    // 3. Fallback auf Namen im Singleplayer
+                    else if (activeLeaderboardKey == singleplayerKey)
+                    {
+                        string savedName = PlayerPrefs.GetString("UserName", "Player");
+                        if (!string.IsNullOrEmpty(savedName) && displayName.Equals(savedName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            isMine = true;
+                        }
                     }
 
                     names[i].text = displayName;
@@ -206,7 +223,6 @@ public class Leaderboard : MonoBehaviour
 
     public static void SubmitRunScore(int roundScore, bool isMultiplayer, Action onComplete = null)
     {
-        // 1. Im Multiplayer lädt AUSSCHLIESSLICH der MasterClient hoch
         if (isMultiplayer && PhotonNetwork.InRoom && !PhotonNetwork.IsMasterClient)
         {
             Debug.Log("[LootLocker] Client ist nicht MasterClient – überspringe Upload.");
@@ -214,7 +230,6 @@ public class Leaderboard : MonoBehaviour
             return;
         }
 
-        // 2. Keys direkt aus den gecachten PlayerPrefs holen – völlig unabhängig von Szenen-Objekten!
         string targetKey = isMultiplayer
             ? PlayerPrefs.GetString("LL_Cached_MultiKey", "36956")
             : PlayerPrefs.GetString("LL_Cached_SingleKey", "36941");
@@ -244,7 +259,6 @@ public class Leaderboard : MonoBehaviour
                 }
             }
 
-            // Keys und Namen deterministisch sortieren
             submitMemberId = string.Compare(persistentId, partnerId, StringComparison.Ordinal) < 0
                 ? $"team_{persistentId}_{partnerId}"
                 : $"team_{partnerId}_{persistentId}";

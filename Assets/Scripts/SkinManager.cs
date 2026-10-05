@@ -4,42 +4,64 @@ using UnityEngine.UI;
 
 public class SkinManager : MonoBehaviour
 {
+    public static SkinManager Instance { get; private set; }
+
     [Header("Skin Listen")]
     [SerializeField] private List<SkinItem> hatSkins = new List<SkinItem>();
     [SerializeField] private List<SkinItem> jacketSkins = new List<SkinItem>();
 
-    [Header("UI Image Preview")]
-    [SerializeField] private Image hatPreviewImage;
-    [SerializeField] private Image jacketPreviewImage;
+    private Image hatImage;
+    private Image jacketImage;
 
     private int currentHatIndex = 0;
     private int currentJacketIndex = 0;
 
     private const string PREF_HAT_ID = "Selected_Hat_ID";
     private const string PREF_JACKET_ID = "Selected_Jacket_ID";
-    public static SkinManager Instance;
 
     private void Awake()
     {
-        // Duplikat-Check: Existiert bereits eine Instanz?
+       
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
-            return;
+            Destroy(Instance.gameObject);
         }
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
-    }
-    private void Start()
-    {
+
         LoadSelectedSkins();
-        UpdateUI();
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = 144;
     }
 
-    // ==========================================
-    // BUTTON ACTIONS (Plus / Minus)
-    // ==========================================
+    private void Start()
+    {
+        FindImagesAndApply();
+    }
+
+    private void FindImagesAndApply()
+    {
+        GameObject hatObj = GameObject.Find("Hat");
+        if (hatObj != null)
+        {
+            hatImage = hatObj.GetComponent<Image>();
+            if (hatImage != null)
+            {
+                hatImage.sprite = GetCurrentHatSprite();
+            }
+        }
+
+        GameObject jacketObj = GameObject.Find("Jacket");
+        if (jacketObj != null)
+        {
+            jacketImage = jacketObj.GetComponent<Image>();
+            if (jacketImage != null)
+            {
+                jacketImage.sprite = GetCurrentJacketSprite();
+            }
+        }
+    }
 
     public void NextHat() => CycleHat(1);
     public void PreviousHat() => CycleHat(-1);
@@ -56,19 +78,10 @@ public class SkinManager : MonoBehaviour
         {
             currentHatIndex = nextIdx;
             SaveSelection(PREF_HAT_ID, hatSkins[currentHatIndex].uniqueId);
-            UpdateUI();
-        }
-    }
-    public Sprite GetHatSpriteById(string id)
-    {
-        var item = hatSkins.Find(s => s.uniqueId == id);
-        return item != null ? item.icon : null;
-    }
 
-    public Sprite GetJacketSpriteById(string id)
-    {
-        var item = jacketSkins.Find(s => s.uniqueId == id);
-        return item != null ? item.icon : null;
+            if (hatImage == null) FindImagesAndApply();
+            else hatImage.sprite = GetCurrentHatSprite();
+        }
     }
 
     private void CycleJacket(int direction)
@@ -80,14 +93,12 @@ public class SkinManager : MonoBehaviour
         {
             currentJacketIndex = nextIdx;
             SaveSelection(PREF_JACKET_ID, jacketSkins[currentJacketIndex].uniqueId);
-            UpdateUI();
+
+            if (jacketImage == null) FindImagesAndApply();
+            else jacketImage.sprite = GetCurrentJacketSprite();
         }
     }
 
-    /// <summary>
-    /// Sucht ausgehend vom aktuellen Index in angegebener Richtung den nächsten freigeschalteten Skin.
-    /// Gibt -1 zurück, wenn gar kein Skin freigeschaltet ist.
-    /// </summary>
     private int FindNextUnlockedIndex(List<SkinItem> list, int startIndex, int direction)
     {
         int count = list.Count;
@@ -99,12 +110,8 @@ public class SkinManager : MonoBehaviour
                 return checkIndex;
             }
         }
-        return -1; // Keiner freigeschaltet
+        return -1;
     }
-
-    // ==========================================
-    // GETTER FÜR SPRITES & ITEMS
-    // ==========================================
 
     public Sprite GetCurrentHatSprite()
     {
@@ -118,12 +125,20 @@ public class SkinManager : MonoBehaviour
         return jacketSkins[currentJacketIndex].icon;
     }
 
+    public Sprite GetHatSpriteById(string id)
+    {
+        var item = hatSkins.Find(s => s.uniqueId == id);
+        return item != null ? item.icon : null;
+    }
+
+    public Sprite GetJacketSpriteById(string id)
+    {
+        var item = jacketSkins.Find(s => s.uniqueId == id);
+        return item != null ? item.icon : null;
+    }
+
     public SkinItem GetCurrentHat() => (hatSkins.Count > 0 && hatSkins[currentHatIndex].IsUnlocked) ? hatSkins[currentHatIndex] : null;
     public SkinItem GetCurrentJacket() => (jacketSkins.Count > 0 && jacketSkins[currentJacketIndex].IsUnlocked) ? jacketSkins[currentJacketIndex] : null;
-
-    // ==========================================
-    // FREISCHALTUNG
-    // ==========================================
 
     public void UnlockSkin(string skinId)
     {
@@ -133,35 +148,13 @@ public class SkinManager : MonoBehaviour
             skin.IsUnlocked = true;
         }
     }
+
     public bool IsSkinUnlocked(string skinId)
     {
-        // Sucht das Item in den Listen
-        SkinItem skin = hatSkins.Find(s => s.uniqueId == skinId) ?? jacketSkins.Find(s => s.uniqueId == skinId);
+        var skin = hatSkins.Find(s => s.uniqueId == skinId) ?? jacketSkins.Find(s => s.uniqueId == skinId);
+        if (skin != null && skin.isUnlockedByDefault) return true;
 
-        if (skin != null)
-        {
-            return skin.IsUnlocked;
-        }
-
-        // Fallback: Direkt über PlayerPrefs prüfen
         return PlayerPrefs.GetInt("Skin_Unlocked_" + skinId, 0) == 1;
-    }
-
-    // ==========================================
-    // INTERNE LOGIK (Save / Load / UI)
-    // ==========================================
-
-    private void UpdateUI()
-    {
-        if (hatPreviewImage != null && hatSkins.Count > 0 && hatSkins[currentHatIndex].IsUnlocked)
-        {
-            hatPreviewImage.sprite = hatSkins[currentHatIndex].icon;
-        }
-
-        if (jacketPreviewImage != null && jacketSkins.Count > 0 && jacketSkins[currentJacketIndex].IsUnlocked)
-        {
-            jacketPreviewImage.sprite = jacketSkins[currentJacketIndex].icon;
-        }
     }
 
     private void SaveSelection(string prefKey, string uniqueId)
@@ -172,13 +165,11 @@ public class SkinManager : MonoBehaviour
 
     private void LoadSelectedSkins()
     {
-        // 1. Hat laden und absichern
         if (hatSkins.Count > 0)
         {
             string savedHatId = PlayerPrefs.GetString(PREF_HAT_ID, "");
             int hatIdx = hatSkins.FindIndex(s => s.uniqueId == savedHatId && s.IsUnlocked);
 
-            // Falls gespeicherter Skin nicht existiert oder nicht freigeschaltet ist: ersten freigeschalteten nehmen
             if (hatIdx == -1)
             {
                 hatIdx = hatSkins.FindIndex(s => s.IsUnlocked);
@@ -191,7 +182,6 @@ public class SkinManager : MonoBehaviour
             }
         }
 
-        // 2. Jacket laden und absichern
         if (jacketSkins.Count > 0)
         {
             string savedJacketId = PlayerPrefs.GetString(PREF_JACKET_ID, "");
