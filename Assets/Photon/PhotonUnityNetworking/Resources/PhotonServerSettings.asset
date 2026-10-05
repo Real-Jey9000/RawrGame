@@ -47,6 +47,7 @@ MonoBehaviour:
   - RPC_SyncRevive
   - RPC_PrepareGhostRespawn
   - RPC_HeartbeatState
+  - RPC_SetRemoteSkins
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 0

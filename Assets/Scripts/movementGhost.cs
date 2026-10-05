@@ -24,6 +24,11 @@ public class movementGhost : MonoBehaviourPun
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Color ghostColor = new Color(1f, 1f, 1f, 0.45f);
 
+    // --- SKIN SYNC: Eigene Renderer für Hat und Jacket ---
+    [Header("Skin Visuals")]
+    [SerializeField] private SpriteRenderer hatRenderer;
+    [SerializeField] private SpriteRenderer jacketRenderer;
+
     [Header("Revive Settings")]
     [SerializeField] private float respawnDelay = 10f;
     [SerializeField] private float fadeInDuration = 2f;
@@ -67,22 +72,35 @@ public class movementGhost : MonoBehaviourPun
         isGameRunning = false;
         IsAlive = true;
 
-        if (isMyScenePlayer) return;
+        // 1. Lokaler Szenen-Spieler setzt seine Skins direkt
+        if (isMyScenePlayer)
+        {
+            ApplyLocalSkins();
+            return;
+        }
 
-        // Netzwerk-Instanz aus Resources
+        // 2. Netzwerk-Instanz aus Resources
         if (photonView.IsMine)
         {
             LocalNetworkView = photonView;
 
             if (spriteRenderer != null) spriteRenderer.enabled = false;
+            if (hatRenderer != null) hatRenderer.enabled = false;
+            if (jacketRenderer != null) jacketRenderer.enabled = false;
+
             if (col != null) col.enabled = false;
             rb.isKinematic = true;
             rb.simulated = false;
+
+            // Sende die eigenen Skins an den Mitspieler (gepuffert für Nachzügler)
+            SendMySkinsToOthers();
         }
         else
         {
             // Das ist der Geist des Mitspielers
             if (spriteRenderer != null) spriteRenderer.color = ghostColor;
+            ApplyGhostAlpha(hatRenderer);
+            ApplyGhostAlpha(jacketRenderer);
 
             if (col != null)
             {
@@ -96,6 +114,66 @@ public class movementGhost : MonoBehaviourPun
             }
         }
     }
+
+    // ==========================================
+    // SKIN LOGIK & SYNC
+    // ==========================================
+
+    private void ApplyLocalSkins()
+    {
+        if (SkinManager.Instance == null) return;
+
+        if (hatRenderer != null)
+            hatRenderer.sprite = SkinManager.Instance.GetCurrentHatSprite();
+
+        if (jacketRenderer != null)
+            jacketRenderer.sprite = SkinManager.Instance.GetCurrentJacketSprite();
+    }
+
+    private void SendMySkinsToOthers()
+    {
+        if (SkinManager.Instance == null) return;
+
+        var curHat = SkinManager.Instance.GetCurrentHat();
+        var curJacket = SkinManager.Instance.GetCurrentJacket();
+
+        string hatId = curHat != null ? curHat.uniqueId : "";
+        string jacketId = curJacket != null ? curJacket.uniqueId : "";
+
+        photonView.RPC(nameof(RPC_SetRemoteSkins), RpcTarget.OthersBuffered, hatId, jacketId);
+    }
+
+    [PunRPC]
+    public void RPC_SetRemoteSkins(string hatId, string jacketId)
+    {
+        if (SkinManager.Instance == null) return;
+
+        if (hatRenderer != null && !string.IsNullOrEmpty(hatId))
+        {
+            hatRenderer.sprite = SkinManager.Instance.GetHatSpriteById(hatId);
+            ApplyGhostAlpha(hatRenderer);
+        }
+
+        if (jacketRenderer != null && !string.IsNullOrEmpty(jacketId))
+        {
+            jacketRenderer.sprite = SkinManager.Instance.GetJacketSpriteById(jacketId);
+            ApplyGhostAlpha(jacketRenderer);
+        }
+    }
+
+    private void ApplyGhostAlpha(SpriteRenderer rend)
+    {
+        if (rend != null)
+        {
+            Color c = rend.color;
+            c.a = ghostColor.a;
+            rend.color = c;
+        }
+    }
+
+    // ==========================================
+    // UPDATE & RESTLICHE LOGIK
+    // ==========================================
 
     private void Update()
     {
@@ -169,12 +247,7 @@ public class movementGhost : MonoBehaviourPun
         {
             IsAlive = true;
             rb.isKinematic = false;
-            if (spriteRenderer != null)
-            {
-                Color c = ghostColor;
-                c.a = ghostColor.a;
-                spriteRenderer.color = c;
-            }
+            ResetRenderersColor();
         }
 
         if (Vector2.Distance(transform.position, authoritativePos) > 0.35f)
@@ -188,7 +261,6 @@ public class movementGhost : MonoBehaviourPun
 
     public void KillPlayer()
     {
-        // Nur der echte lokale Szenen-Spieler darf sich selbst töten
         if (!isMyScenePlayer || !IsAlive) return;
 
         IsAlive = false;
@@ -213,18 +285,15 @@ public class movementGhost : MonoBehaviourPun
     [PunRPC]
     public void RPC_SyncDeath()
     {
-        // Der Geist des Mitspielers bleibt stehen
         IsAlive = false;
         rb.velocity = Vector2.zero;
         rb.isKinematic = true;
 
-        // Wenn MEIN eigener Spieler noch lebt: Auf gar keinen Fall einfrieren!
         if (LocalScenePlayerInstance != null && LocalScenePlayerInstance.IsAlive)
         {
             return;
         }
 
-        // Erst wenn wirklich alle Spieler tot sind
         if (!AtLeastOnePlayerAlive())
         {
             TriggerFullGameOver();
@@ -247,9 +316,7 @@ public class movementGhost : MonoBehaviourPun
         transform.position = survivingMate.transform.position;
         if (rb != null) rb.position = survivingMate.transform.position;
 
-        Color startCol = spriteRenderer.color;
-        startCol.a = 0f;
-        spriteRenderer.color = startCol;
+        SetRenderersAlpha(0f);
 
         if (LocalNetworkView != null && PhotonNetwork.InRoom)
         {
@@ -261,10 +328,8 @@ public class movementGhost : MonoBehaviourPun
         {
             timer += Time.deltaTime;
             float progress = timer / fadeInDuration;
-            startCol.a = Mathf.Clamp01(progress);
-            spriteRenderer.color = startCol;
+            SetRenderersAlpha(Mathf.Clamp01(progress));
 
-            // Während des Fades an den Partner geheftet bleiben
             if (survivingMate != null && survivingMate.IsAlive)
             {
                 transform.position = survivingMate.transform.position;
@@ -274,8 +339,7 @@ public class movementGhost : MonoBehaviourPun
             yield return null;
         }
 
-        startCol.a = 1f;
-        spriteRenderer.color = startCol;
+        SetRenderersAlpha(1f);
         rb.isKinematic = false;
         rb.velocity = Vector2.zero;
         IsAlive = true;
@@ -310,13 +374,21 @@ public class movementGhost : MonoBehaviourPun
         }
 
         IsAlive = true;
+        ResetRenderersColor();
+    }
 
-        if (spriteRenderer != null)
-        {
-            Color c = ghostColor;
-            c.a = ghostColor.a;
-            spriteRenderer.color = c;
-        }
+    private void SetRenderersAlpha(float a)
+    {
+        if (spriteRenderer != null) { Color c = spriteRenderer.color; c.a = a; spriteRenderer.color = c; }
+        if (hatRenderer != null) { Color c = hatRenderer.color; c.a = a; hatRenderer.color = c; }
+        if (jacketRenderer != null) { Color c = jacketRenderer.color; c.a = a; jacketRenderer.color = c; }
+    }
+
+    private void ResetRenderersColor()
+    {
+        if (spriteRenderer != null) { Color c = ghostColor; c.a = ghostColor.a; spriteRenderer.color = c; }
+        if (hatRenderer != null) ApplyGhostAlpha(hatRenderer);
+        if (jacketRenderer != null) ApplyGhostAlpha(jacketRenderer);
     }
 
     private void TriggerFullGameOver()
@@ -330,13 +402,11 @@ public class movementGhost : MonoBehaviourPun
 
     public static bool AtLeastOnePlayerAlive()
     {
-        // 1. Lebt der eigene Szenen-Spieler? Dann lebt garantiert noch jemand!
         if (LocalScenePlayerInstance != null && LocalScenePlayerInstance.IsAlive)
         {
             return true;
         }
 
-        // 2. Prüfe fremde Geister
         foreach (var p in AllActiveRunners)
         {
             if (p == null) continue;

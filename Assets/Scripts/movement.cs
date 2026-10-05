@@ -11,7 +11,14 @@ public class movement : MonoBehaviour
     [SerializeField] float MovementSpeed = 12;
     [SerializeField] AudioSource SprungSound;
     float speeddazugewinnung = 0.05f;
+    [SerializeField] SpriteRenderer hat;
+    [SerializeField] SpriteRenderer jacket;
 
+    private void Start()
+    {
+        hat.sprite = SkinManager.Instance.GetCurrentHatSprite();
+        jacket.sprite = SkinManager.Instance.GetCurrentJacketSprite();
+    }
     void Update()
     {
         if (MovementSpeed < 69)
