@@ -1,84 +1,160 @@
+using System.Collections;
 using UnityEngine;
 
 public class CelestialParallax : MonoBehaviour
 {
-    [Header("Referenzen")]
+    private enum CyclePhase
+    {
+        SunMoving,
+        TransitionToNight,
+        MoonMoving,
+        TransitionToDay
+    }
+
     [SerializeField] private GameObject sun;
     [SerializeField] private GameObject moon;
     [SerializeField] private Camera targetCamera;
 
-    [Header("Bewegung")]
     [SerializeField] private float speed = 2f;
-    [SerializeField] private float resetThresholdX = -15f;
-    [SerializeField] private float respawnPositionX = 15f;
+    [SerializeField] private float delayBeforeMoonRise = 1.5f;
+    [SerializeField] private float delayBeforeSunRise = 1.5f;
 
-    [Header("Farben & Übergangs-Geschwindigkeit")]
     [SerializeField] private Color dayColor = new Color(0.3f, 0.6f, 0.95f);
     [SerializeField] private Color nightColor = new Color(0.02f, 0.02f, 0.05f);
-    [Tooltip("Wie schnell die Farbe weich wechselt (z. B. 1 = 1 Sekunde für den Übergang)")]
     [SerializeField] private float transitionSpeed = 1.5f;
 
-    [Header("Trigger-Schwellenwert")]
-    [Tooltip("Sobald die Sonne dieses X nach links unterschreitet, wird es Nacht")]
-    [SerializeField] private float triggerSunsetX = -10f;
-    [Tooltip("Sobald der Mond dieses X nach links unterschreitet, wird es Tag")]
-    [SerializeField] private float triggerSunriseX = -10f;
-
     private Color targetColor;
+    private CyclePhase currentPhase = CyclePhase.SunMoving;
+    private SpriteRenderer sunRenderer;
+    private SpriteRenderer moonRenderer;
 
     private void Awake()
     {
         if (targetCamera == null)
             targetCamera = Camera.main;
 
-        // Startfarbe initial auf Tag setzen
+        if (sun != null) sunRenderer = sun.GetComponentInChildren<SpriteRenderer>();
+        if (moon != null) moonRenderer = moon.GetComponentInChildren<SpriteRenderer>();
+
         targetColor = dayColor;
-        targetCamera.backgroundColor = dayColor;
+        if (targetCamera != null)
+        {
+            targetCamera.backgroundColor = dayColor;
+        }
+
+        if (moon != null)
+        {
+            ParkOffscreen(moon);
+        }
+
+        currentPhase = CyclePhase.SunMoving;
     }
 
     private void Update()
     {
-        MoveAndWrap(sun);
-        MoveAndWrap(moon);
-
-        CheckCycleTriggers();
         UpdateColorTransition();
-    }
 
-    private void MoveAndWrap(GameObject celestialBody)
-    {
-        if (celestialBody == null) return;
-
-        Transform t = celestialBody.transform;
-        t.localPosition += Vector3.left * (speed * Time.deltaTime);
-
-        // Teleport nach rechts, sobald weit genug links
-        if (t.localPosition.x <= resetThresholdX)
+        switch (currentPhase)
         {
-            t.localPosition = new Vector3(respawnPositionX, t.localPosition.y, t.localPosition.z);
+            case CyclePhase.SunMoving:
+                if (sun != null)
+                {
+                    sun.transform.position += Vector3.left * (speed * Time.deltaTime);
+
+                    if (IsCompletelyOffscreenLeft(sun, sunRenderer))
+                    {
+                        StartCoroutine(HandleSunsetTransition());
+                    }
+                }
+                break;
+
+            case CyclePhase.MoonMoving:
+                if (moon != null)
+                {
+                    moon.transform.position += Vector3.left * (speed * Time.deltaTime);
+
+                    if (IsCompletelyOffscreenLeft(moon, moonRenderer))
+                    {
+                        StartCoroutine(HandleSunriseTransition());
+                    }
+                }
+                break;
+
+            case CyclePhase.TransitionToNight:
+            case CyclePhase.TransitionToDay:
+                break;
         }
     }
 
-    private void CheckCycleTriggers()
+    private IEnumerator HandleSunsetTransition()
     {
-        // Sonne verlässt das Bild -> Nacht einleiten
-        if (sun != null && sun.transform.localPosition.x <= triggerSunsetX && targetColor != nightColor)
+        currentPhase = CyclePhase.TransitionToNight;
+        targetColor = nightColor;
+
+        ParkOffscreen(sun);
+
+        yield return new WaitForSeconds(delayBeforeMoonRise);
+
+        if (moon != null)
         {
-            targetColor = nightColor;
+            SpawnAtRightEdge(moon, moonRenderer);
         }
 
-        // Mond verlässt das Bild -> Tag einleiten
-        if (moon != null && moon.transform.localPosition.x <= triggerSunriseX && targetColor != dayColor)
+        currentPhase = CyclePhase.MoonMoving;
+    }
+
+    private IEnumerator HandleSunriseTransition()
+    {
+        currentPhase = CyclePhase.TransitionToDay;
+        targetColor = dayColor;
+
+        ParkOffscreen(moon);
+
+        yield return new WaitForSeconds(delayBeforeSunRise);
+
+        if (sun != null)
         {
-            targetColor = dayColor;
+            SpawnAtRightEdge(sun, sunRenderer);
         }
+
+        currentPhase = CyclePhase.SunMoving;
+    }
+
+    private bool IsCompletelyOffscreenLeft(GameObject obj, SpriteRenderer rend)
+    {
+        if (targetCamera == null || obj == null) return false;
+
+        float radius = rend != null ? rend.bounds.extents.x : 1f;
+        Vector3 rightEdgeWorldPos = obj.transform.position + new Vector3(radius, 0f, 0f);
+
+        Vector3 viewportPoint = targetCamera.WorldToViewportPoint(rightEdgeWorldPos);
+        return viewportPoint.x < 0f;
+    }
+
+    private void SpawnAtRightEdge(GameObject obj, SpriteRenderer rend)
+    {
+        if (targetCamera == null || obj == null) return;
+
+        float radius = rend != null ? rend.bounds.extents.x : 1f;
+
+        float cameraDistance = Mathf.Abs(targetCamera.transform.position.z - obj.transform.position.z);
+        Vector3 rightViewportEdge = new Vector3(1.0f, 0.5f, cameraDistance);
+        Vector3 worldEdge = targetCamera.ViewportToWorldPoint(rightViewportEdge);
+
+        float targetX = worldEdge.x + radius + 0.1f;
+        obj.transform.position = new Vector3(targetX, obj.transform.position.y, obj.transform.position.z);
+    }
+
+    private void ParkOffscreen(GameObject obj)
+    {
+        if (obj == null) return;
+        obj.transform.position = new Vector3(9999f, obj.transform.position.y, obj.transform.position.z);
     }
 
     private void UpdateColorTransition()
     {
         if (targetCamera == null) return;
 
-        // Gleitet weich und bildratenunabhängig zur Zielfarbe
         targetCamera.backgroundColor = Color.Lerp(
             targetCamera.backgroundColor,
             targetColor,

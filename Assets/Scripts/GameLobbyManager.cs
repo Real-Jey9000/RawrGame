@@ -22,12 +22,22 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
     [Header("Countdown")]
     [SerializeField] private int countdownSeconds = 10;
 
+    [Header("Matchmaking Settings")]
+    [Tooltip("Feste Server-Region (z.B. eu, us, asia). Verhindert, dass Clients auf verschiedenen Servern landen.")]
+    [SerializeField] private string fixedRegion = "eu";
+
+    // Öffentliches Flag, um im Leaderboard-Upload-Skript zu prüfen, ob der Run gewertet werden darf
+    public static bool isCoopRunValid = false;
+
     private bool hasSpawnedGhost = false;
     private bool countdownStarted = false;
+    private Coroutine soloRoomTimeoutCoroutine;
+    private Coroutine countdownCoroutine;
 
     private void Start()
     {
         movementGhost.isGameRunning = false;
+        isCoopRunValid = false;
         Time.timeScale = 1f;
         hasSpawnedGhost = false;
         countdownStarted = false;
@@ -44,8 +54,12 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
 
     private void StartConnectFlow()
     {
-        // 1. If currently in a room: leave it first!
-        // Photon will automatically route back to MasterServer and invoke OnConnectedToMaster().
+        PhotonNetwork.PhotonServerSettings.AppSettings.AppVersion = Application.version;
+        if (!string.IsNullOrEmpty(fixedRegion))
+        {
+            PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = fixedRegion;
+        }
+
         if (PhotonNetwork.InRoom)
         {
             UpdateStatus("Leaving previous room...");
@@ -53,14 +67,12 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
             return;
         }
 
-        // 2. Are we already on the MasterServer and ready for matchmaking?
         if (PhotonNetwork.IsConnectedAndReady && PhotonNetwork.Server == ServerConnection.MasterServer)
         {
             OnConnectedToMaster();
             return;
         }
 
-        // 3. If disconnected or not initialized yet:
         if (PhotonNetwork.NetworkClientState == ClientState.Disconnected ||
             PhotonNetwork.NetworkClientState == ClientState.PeerCreated)
         {
@@ -73,7 +85,6 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
         }
     }
 
-    // Fires reliably once we are actually on the MasterServer and permitted to join rooms
     public override void OnConnectedToMaster()
     {
         UpdateStatus("Searching for room...");
@@ -82,6 +93,23 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnLeftRoom()
     {
+        hasSpawnedGhost = false;
+        countdownStarted = false;
+        isCoopRunValid = false;
+        movementGhost.AllActiveRunners.Clear();
+
+        if (countdownCoroutine != null)
+        {
+            StopCoroutine(countdownCoroutine);
+            countdownCoroutine = null;
+        }
+
+        if (soloRoomTimeoutCoroutine != null)
+        {
+            StopCoroutine(soloRoomTimeoutCoroutine);
+            soloRoomTimeoutCoroutine = null;
+        }
+
         if (PhotonNetwork.IsConnectedAndReady && PhotonNetwork.Server == ServerConnection.MasterServer)
         {
             OnConnectedToMaster();
@@ -94,13 +122,17 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
-        UpdateStatus("Creating new room...");
+        UpdateStatus("Creating room...");
+
         RoomOptions options = new RoomOptions
         {
             MaxPlayers = 2,
             IsOpen = true,
-            IsVisible = true
+            IsVisible = true,
+            EmptyRoomTtl = 0,
+            PlayerTtl = 0
         };
+
         PhotonNetwork.CreateRoom(null, options);
     }
 
@@ -116,14 +148,18 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
         {
             UpdateStatus("Waiting for other player...");
+
+            if (soloRoomTimeoutCoroutine != null) StopCoroutine(soloRoomTimeoutCoroutine);
+            soloRoomTimeoutCoroutine = StartCoroutine(SoloRoomTimeoutRoutine());
         }
         else
         {
+            if (soloRoomTimeoutCoroutine != null) StopCoroutine(soloRoomTimeoutCoroutine);
             UpdateStatus("Player found!");
 
             if (PhotonNetwork.IsMasterClient && !countdownStarted)
             {
-                StartCoroutine(StartCountdownRoutine());
+                countdownCoroutine = StartCoroutine(StartCountdownRoutine());
             }
         }
     }
@@ -132,10 +168,28 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
     {
         UpdateStatus("Player joined!");
 
+        if (soloRoomTimeoutCoroutine != null)
+        {
+            StopCoroutine(soloRoomTimeoutCoroutine);
+            soloRoomTimeoutCoroutine = null;
+        }
+
         if (PhotonNetwork.CurrentRoom.PlayerCount >= 2 && PhotonNetwork.IsMasterClient && !countdownStarted)
         {
             PhotonNetwork.CurrentRoom.IsOpen = false;
-            StartCoroutine(StartCountdownRoutine());
+            countdownCoroutine = StartCoroutine(StartCountdownRoutine());
+        }
+    }
+
+    private IEnumerator SoloRoomTimeoutRoutine()
+    {
+        float delay = 4f + Random.Range(0.2f, 1.0f);
+        yield return new WaitForSeconds(delay);
+
+        if (PhotonNetwork.InRoom && PhotonNetwork.CurrentRoom.PlayerCount < 2 && !countdownStarted)
+        {
+            Debug.Log("[Lobby] Alleine im Raum festgesteckt. Re-Matchmaking...");
+            PhotonNetwork.LeaveRoom();
         }
     }
 
@@ -145,12 +199,27 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
 
         for (int i = countdownSeconds; i > 0; i--)
         {
+            // Sicherheitsprüfung während des Countdowns: Ist der Partner noch da?
+            if (PhotonNetwork.CurrentRoom == null || PhotonNetwork.CurrentRoom.PlayerCount < 2)
+            {
+                countdownStarted = false;
+                yield break;
+            }
+
             photonView.RPC(nameof(RPC_UpdateCountdown), RpcTarget.All, i);
             yield return new WaitForSeconds(1f);
         }
 
-        int mapSeed = Random.Range(1000, 99999);
-        photonView.RPC(nameof(RPC_StartGame), RpcTarget.All, mapSeed);
+        // Finale Prüfung vor Spielstart
+        if (PhotonNetwork.CurrentRoom != null && PhotonNetwork.CurrentRoom.PlayerCount >= 2)
+        {
+            int mapSeed = Random.Range(1000, 99999);
+            photonView.RPC(nameof(RPC_StartGame), RpcTarget.All, mapSeed);
+        }
+        else
+        {
+            countdownStarted = false;
+        }
     }
 
     [PunRPC]
@@ -163,6 +232,7 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
     private void RPC_StartGame(int seed)
     {
         UpdateStatus("");
+        isCoopRunValid = true;
 
         if (spawnerList == null || spawnerList.Length == 0)
         {
@@ -182,8 +252,29 @@ public class GameLobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
+        // 1. Ungültig machen, damit kein Score hochgeladen wird
+        isCoopRunValid = false;
         movementGhost.isGameRunning = false;
-        UpdateStatus("Other player left the game.");
+
+        // 2. Countdown stoppen, falls er gerade lief
+        if (countdownCoroutine != null)
+        {
+            StopCoroutine(countdownCoroutine);
+            countdownCoroutine = null;
+        }
+        countdownStarted = false;
+
+        // 3. Status setzen & Raum wieder öffnen oder verlassen
+        UpdateStatus("Partner left the game.");
+
+        if (PhotonNetwork.InRoom)
+        {
+            // Raum wieder für andere Spieler freigeben und Timeout starten
+            PhotonNetwork.CurrentRoom.IsOpen = true;
+
+            if (soloRoomTimeoutCoroutine != null) StopCoroutine(soloRoomTimeoutCoroutine);
+            soloRoomTimeoutCoroutine = StartCoroutine(SoloRoomTimeoutRoutine());
+        }
     }
 
     private void UpdateStatus(string message)

@@ -10,6 +10,7 @@ public class movementGhost : MonoBehaviourPun
     public static readonly List<movementGhost> AllActiveRunners = new List<movementGhost>();
     public static movementGhost LocalScenePlayerInstance;
     public static PhotonView LocalNetworkView;
+    private static bool isGameOverTriggered = false;
 
     [Header("Player Role")]
     [Tooltip("Haken setzen, wenn dieses Objekt der feste Spieler in der Szene ist!")]
@@ -24,7 +25,6 @@ public class movementGhost : MonoBehaviourPun
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Color ghostColor = new Color(1f, 1f, 1f, 0.45f);
 
-    // --- SKIN SYNC: Eigene Renderer für Hat und Jacket ---
     [Header("Skin Visuals")]
     [SerializeField] private SpriteRenderer hatRenderer;
     [SerializeField] private SpriteRenderer jacketRenderer;
@@ -38,8 +38,8 @@ public class movementGhost : MonoBehaviourPun
 
     private Rigidbody2D rb;
     private Collider2D col;
+    private Coroutine respawnCoroutine;
 
-    // Timer für sanfte Positions-Korrekturen
     private float syncTimer = 0f;
     private const float SYNC_INTERVAL = 0.5f;
 
@@ -71,15 +71,14 @@ public class movementGhost : MonoBehaviourPun
     {
         isGameRunning = false;
         IsAlive = true;
+        isGameOverTriggered = false;
 
-        // 1. Lokaler Szenen-Spieler setzt seine Skins direkt
         if (isMyScenePlayer)
         {
             ApplyLocalSkins();
             return;
         }
 
-        // 2. Netzwerk-Instanz aus Resources
         if (photonView.IsMine)
         {
             LocalNetworkView = photonView;
@@ -92,12 +91,10 @@ public class movementGhost : MonoBehaviourPun
             rb.isKinematic = true;
             rb.simulated = false;
 
-            // Sende die eigenen Skins an den Mitspieler (gepuffert für Nachzügler)
             SendMySkinsToOthers();
         }
         else
         {
-            // Das ist der Geist des Mitspielers
             if (spriteRenderer != null) spriteRenderer.color = ghostColor;
             ApplyGhostAlpha(hatRenderer);
             ApplyGhostAlpha(jacketRenderer);
@@ -106,7 +103,6 @@ public class movementGhost : MonoBehaviourPun
             {
                 col.isTrigger = false;
 
-                // Nicht mit dem eigenen Szenen-Spieler kollidieren
                 if (LocalScenePlayerInstance != null && LocalScenePlayerInstance.col != null)
                 {
                     Physics2D.IgnoreCollision(col, LocalScenePlayerInstance.col, true);
@@ -114,10 +110,6 @@ public class movementGhost : MonoBehaviourPun
             }
         }
     }
-
-    // ==========================================
-    // SKIN LOGIK & SYNC
-    // ==========================================
 
     private void ApplyLocalSkins()
     {
@@ -171,17 +163,12 @@ public class movementGhost : MonoBehaviourPun
         }
     }
 
-    // ==========================================
-    // UPDATE & RESTLICHE LOGIK
-    // ==========================================
-
     private void Update()
     {
         if (!isGameRunning) return;
 
         float currentSpeed = GameRunnerAnchor.Instance != null ? GameRunnerAnchor.Instance.CurrentSpeed : 12f;
 
-        // 1. Eigener Szenen-Spieler
         if (isMyScenePlayer)
         {
             if (!IsAlive) return;
@@ -201,7 +188,6 @@ public class movementGhost : MonoBehaviourPun
 
             transform.Translate(Vector2.right * (Time.deltaTime * currentSpeed));
 
-            // Heartbeat: Regelmäßig Position und Status an Mitspieler senden
             syncTimer += Time.deltaTime;
             if (syncTimer >= SYNC_INTERVAL)
             {
@@ -214,7 +200,6 @@ public class movementGhost : MonoBehaviourPun
         }
         else
         {
-            // Geist des Mitspielers: läuft nur weiter, wenn er laut Autorität am Leben ist
             if (!photonView.IsMine && IsAlive)
             {
                 transform.Translate(Vector2.right * (Time.deltaTime * currentSpeed));
@@ -239,7 +224,6 @@ public class movementGhost : MonoBehaviourPun
         ExecuteJump();
     }
 
-    // --- AUTORITÄRE STATUS-KORREKTUR ---
     [PunRPC]
     public void RPC_HeartbeatState(Vector3 authoritativePos, bool aliveState)
     {
@@ -257,8 +241,6 @@ public class movementGhost : MonoBehaviourPun
         }
     }
 
-    // --- TOD & RESPAWN LOGIK ---
-
     public void KillPlayer()
     {
         if (!isMyScenePlayer || !IsAlive) return;
@@ -274,7 +256,8 @@ public class movementGhost : MonoBehaviourPun
 
         if (AtLeastOnePlayerAlive())
         {
-            StartCoroutine(RespawnRoutine());
+            if (respawnCoroutine != null) StopCoroutine(respawnCoroutine);
+            respawnCoroutine = StartCoroutine(RespawnRoutine());
         }
         else
         {
@@ -296,6 +279,12 @@ public class movementGhost : MonoBehaviourPun
 
         if (!AtLeastOnePlayerAlive())
         {
+            if (LocalScenePlayerInstance != null && LocalScenePlayerInstance.respawnCoroutine != null)
+            {
+                LocalScenePlayerInstance.StopCoroutine(LocalScenePlayerInstance.respawnCoroutine);
+                LocalScenePlayerInstance.respawnCoroutine = null;
+            }
+
             TriggerFullGameOver();
         }
     }
@@ -308,6 +297,7 @@ public class movementGhost : MonoBehaviourPun
         if (survivingMate == null)
         {
             TriggerFullGameOver();
+            respawnCoroutine = null;
             yield break;
         }
 
@@ -343,6 +333,7 @@ public class movementGhost : MonoBehaviourPun
         rb.isKinematic = false;
         rb.velocity = Vector2.zero;
         IsAlive = true;
+        respawnCoroutine = null;
 
         if (LocalNetworkView != null && PhotonNetwork.InRoom)
         {
@@ -393,6 +384,9 @@ public class movementGhost : MonoBehaviourPun
 
     private void TriggerFullGameOver()
     {
+        if (isGameOverTriggered) return;
+        isGameOverTriggered = true;
+
         CollisionIrgendwas deathHandler = FindObjectOfType<CollisionIrgendwas>();
         if (deathHandler != null)
         {

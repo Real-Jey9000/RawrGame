@@ -19,10 +19,20 @@ public class SkinManager : MonoBehaviour
     private const string PREF_JACKET_ID = "Selected_Jacket_ID";
     public static SkinManager Instance;
 
+    private void Awake()
+    {
+        // Duplikat-Check: Existiert bereits eine Instanz?
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
     private void Start()
     {
-        DontDestroyOnLoad(gameObject);
-        Instance = this;
         LoadSelectedSkins();
         UpdateUI();
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,8 +7,8 @@ public class SkinGainer : MonoBehaviour
 {
     public enum UnlockConditionType
     {
-        ScoreReached,       // Wird anhand der Player-X-Position / Score freigeschaltet
-        AnnualDateRange     // Jährliches Event (Monat + Tag, z.B. 24.12. bis 26.12.)
+        ScoreReached,
+        AnnualDateRange
     }
 
     [System.Serializable]
@@ -34,25 +35,36 @@ public class SkinGainer : MonoBehaviour
         [Range(1, 12)] public int endMonth = 12;
 
         [HideInInspector]
-        public bool isChecked = false; // Verhindert mehrfaches Prüfen im selben Run
+        public bool isChecked = false;
     }
 
     [Header("Referenzen")]
     [Tooltip("Transform des lokalen Spielers (zur Distanz-/Score-Ermittlung). Falls leer, wird LocalScenePlayerInstance genutzt.")]
     [SerializeField] private Transform playerTransform;
 
+    [Header("Unlock UI Feedback")]
+    [Tooltip("GameObject (z. B. UI-Popup/Banner mit Text), das kurz aufpoppen soll")]
+    [SerializeField] private GameObject unlockNotificationUI;
+    [Tooltip("Wie viele Sekunden das UI-Element aktiv bleiben soll")]
+    [SerializeField] private float notificationDuration = 3f;
+
     [Header("Herausforderungen")]
     [SerializeField] private List<SkinUnlockRule> unlockRules = new List<SkinUnlockRule>();
 
+    private Coroutine notificationCoroutine;
+
     private void Start()
     {
-        // 1. Jährliche Datums-Events beim Starten prüfen
+        if (unlockNotificationUI != null)
+        {
+            unlockNotificationUI.SetActive(false);
+        }
+
         CheckAnnualDateUnlocks();
     }
 
     private void Update()
     {
-        // 2. Score-basierte Belohnungen während des Laufs prüfen
         CheckScoreBasedUnlocks();
     }
 
@@ -74,24 +86,18 @@ public class SkinGainer : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Prüft, ob ein Datum unabhängig vom Jahr im Bereich liegt (auch über Silvester hinaus).
-    /// </summary>
     private bool IsDateInRange(DateTime now, int startDay, int startMonth, int endDay, int endMonth)
     {
-        // Vergleichswert als Zahl formatieren: Monat * 100 + Tag (z.B. 24. Dezember = 1224)
         int currentVal = now.Month * 100 + now.Day;
         int startVal = startMonth * 100 + startDay;
         int endVal = endMonth * 100 + endDay;
 
-        // Normaler Bereich innerhalb eines Kalenderjahres (z.B. 24.12. bis 26.12.)
         if (startVal <= endVal)
         {
             return currentVal >= startVal && currentVal <= endVal;
         }
         else
         {
-            // Bereich geht über Neujahr (z.B. 28.12. bis 05.01.)
             return currentVal >= startVal || currentVal <= endVal;
         }
     }
@@ -151,5 +157,29 @@ public class SkinGainer : MonoBehaviour
         }
 
         Debug.Log($"<color=green>[SkinGainer] Skin freigeschaltet: {skinId}!</color> Grund: {reason}");
+
+        TriggerUnlockNotification();
+    }
+
+    private void TriggerUnlockNotification()
+    {
+        if (unlockNotificationUI == null) return;
+
+        if (notificationCoroutine != null)
+        {
+            StopCoroutine(notificationCoroutine);
+        }
+
+        notificationCoroutine = StartCoroutine(ShowNotificationRoutine());
+    }
+
+    private IEnumerator ShowNotificationRoutine()
+    {
+        unlockNotificationUI.SetActive(true);
+
+        yield return new WaitForSeconds(notificationDuration);
+
+        unlockNotificationUI.SetActive(false);
+        notificationCoroutine = null;
     }
 }
