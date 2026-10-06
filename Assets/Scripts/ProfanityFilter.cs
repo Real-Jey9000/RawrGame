@@ -21,6 +21,7 @@ public static class ProfanityFilter
         { '$', 's' }, { '5', 's' },
         { '7', 't' }, { '+', 't' },
         { 'v', 'u' },
+        { 's', 'ﬂ' },
         { 'w', 'v' }
     };
 
@@ -38,8 +39,8 @@ public static class ProfanityFilter
 
             "pedophil", "paedophil", "rape", "vergewaltig", "childporn", "cp",
 
-            "hure", "hurensohn", "fotze", "misstgeburt", "missgeburt", "bastard", "wanker",
-            "motherfucker", "whore", "slut", "cunt", "arschloch", "spast", "spasti"
+            "hure", "hurensohn", "fotze", "misstgeburt", "missgeburt", "bastard", "wanker", "bastart",
+            "motherfucker", "whore", "slut", "cunt", "arschloch", "spast", "spasti",
         });
 
         // 2. Exact words: Blocked,  if name is exactly...
@@ -48,7 +49,7 @@ public static class ProfanityFilter
             // Deutsch
             "nutte", "schlampe", "wichser", "wichs", "penner", "idiot", "spacko", "vollidiot", "ss-",
             "arsch", "scheisse", "scheiﬂe", "kacke", "fick", "ficken", "sau", "depp", "trottel",
-            "pimmel", "schwanz", "muschi", "titten", "fresse", "nega", "neger", "-",
+            "pimmel", "schwanz", "muschi", "titten", "fresse", "nega", "neger", "-", "fick", "ficker", "pimmel", "wixxer", "wixxi", "pimmil", "ficki",
 
             // English
             "fuck", "fucking", "fucked", "fucker", "bitch", "shit", "ass", "asshole",

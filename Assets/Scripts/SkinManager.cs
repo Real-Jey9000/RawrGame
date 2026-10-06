@@ -10,6 +10,17 @@ public class SkinManager : MonoBehaviour
     [SerializeField] private List<SkinItem> hatSkins = new List<SkinItem>();
     [SerializeField] private List<SkinItem> jacketSkins = new List<SkinItem>();
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource hatChangeSound;
+    [SerializeField] private AudioSource jacketChangeSound;
+
+    [Header("UI Toggle Buttons")]
+    [Tooltip("Objekte/Buttons, die nur aktiv sind, wenn man mehr als 1 Hat besitzt")]
+    [SerializeField] private List<GameObject> hatSelectionButtons = new List<GameObject>();
+
+    [Tooltip("Objekte/Buttons, die nur aktiv sind, wenn man mehr als 1 Jacket besitzt")]
+    [SerializeField] private List<GameObject> jacketSelectionButtons = new List<GameObject>();
+
     private Image hatImage;
     private Image jacketImage;
 
@@ -21,7 +32,6 @@ public class SkinManager : MonoBehaviour
 
     private void Awake()
     {
-       
         if (Instance != null && Instance != this)
         {
             Destroy(Instance.gameObject);
@@ -38,6 +48,7 @@ public class SkinManager : MonoBehaviour
     private void Start()
     {
         FindImagesAndApply();
+        UpdateSelectionButtonsVisibility();
     }
 
     private void FindImagesAndApply()
@@ -63,6 +74,53 @@ public class SkinManager : MonoBehaviour
         }
     }
 
+    public void UpdateSelectionButtonsVisibility()
+    {
+        bool hasMultipleHats = GetUnlockedHatCount() > 1;
+        if (hatSelectionButtons != null)
+        {
+            foreach (var btn in hatSelectionButtons)
+            {
+                if (btn != null)
+                {
+                    btn.SetActive(hasMultipleHats);
+                }
+            }
+        }
+
+        bool hasMultipleJackets = GetUnlockedJacketCount() > 1;
+        if (jacketSelectionButtons != null)
+        {
+            foreach (var btn in jacketSelectionButtons)
+            {
+                if (btn != null)
+                {
+                    btn.SetActive(hasMultipleJackets);
+                }
+            }
+        }
+    }
+
+    public int GetUnlockedHatCount()
+    {
+        int count = 0;
+        foreach (var h in hatSkins)
+        {
+            if (h != null && h.IsUnlocked) count++;
+        }
+        return count;
+    }
+
+    public int GetUnlockedJacketCount()
+    {
+        int count = 0;
+        foreach (var j in jacketSkins)
+        {
+            if (j != null && j.IsUnlocked) count++;
+        }
+        return count;
+    }
+
     public void NextHat() => CycleHat(1);
     public void PreviousHat() => CycleHat(-1);
 
@@ -79,6 +137,11 @@ public class SkinManager : MonoBehaviour
             currentHatIndex = nextIdx;
             SaveSelection(PREF_HAT_ID, hatSkins[currentHatIndex].uniqueId);
 
+            if (hatChangeSound != null)
+            {
+                hatChangeSound.Play();
+            }
+
             if (hatImage == null) FindImagesAndApply();
             else hatImage.sprite = GetCurrentHatSprite();
         }
@@ -93,6 +156,11 @@ public class SkinManager : MonoBehaviour
         {
             currentJacketIndex = nextIdx;
             SaveSelection(PREF_JACKET_ID, jacketSkins[currentJacketIndex].uniqueId);
+
+            if (jacketChangeSound != null)
+            {
+                jacketChangeSound.Play();
+            }
 
             if (jacketImage == null) FindImagesAndApply();
             else jacketImage.sprite = GetCurrentJacketSprite();
@@ -146,6 +214,7 @@ public class SkinManager : MonoBehaviour
         if (skin != null)
         {
             skin.IsUnlocked = true;
+            UpdateSelectionButtonsVisibility();
         }
     }
 
