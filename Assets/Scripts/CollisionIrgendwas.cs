@@ -10,9 +10,7 @@ public class CollisionIrgendwas : MonoBehaviour
 
     [Header("UI & Audio")]
     [SerializeField] private GameObject Canvas;
-    [SerializeField] private AudioClip[] TodClips;
-    [SerializeField] private AudioClip[] TodClipsRare;
-    [SerializeField] private AudioSource TodHalt;
+    [SerializeField] private Soundplayer deathSoundplayer;
 
     private void Awake()
     {
@@ -28,6 +26,12 @@ public class CollisionIrgendwas : MonoBehaviour
         if (Canvas == null)
         {
             Canvas = FindDeathCanvasInScene();
+        }
+
+        // Automatischer Fallback für den Soundplayer, falls nicht im Inspector zugewiesen
+        if (deathSoundplayer == null)
+        {
+            deathSoundplayer = GetComponent<Soundplayer>();
         }
     }
 
@@ -57,7 +61,11 @@ public class CollisionIrgendwas : MonoBehaviour
     private void HandleSingleplayerDeath()
     {
         TriggerDeathVisuals();
-        PlayDeathSound();
+
+        if (deathSoundplayer != null)
+        {
+            deathSoundplayer.playRandom();
+        }
 
         Save saveComp = GetComponent<Save>();
         if (saveComp != null)
@@ -72,25 +80,13 @@ public class CollisionIrgendwas : MonoBehaviour
 
         if (ghost != null && ghost.IsMyScenePlayer && ghost.IsAlive)
         {
-            PlayDeathSound();
+            if (deathSoundplayer != null)
+            {
+                deathSoundplayer.playRandom();
+            }
+
             ghost.KillPlayer();
         }
-    }
-
-    private void PlayDeathSound()
-    {
-        if (TodHalt == null) return;
-
-        if (Random.value < 0.9f && TodClips != null && TodClips.Length > 0)
-        {
-            TodHalt.clip = TodClips[Random.Range(0, TodClips.Length)];
-        }
-        else if (TodClipsRare != null && TodClipsRare.Length > 0)
-        {
-            TodHalt.clip = TodClipsRare[Random.Range(0, TodClipsRare.Length)];
-        }
-
-        TodHalt.Play();
     }
 
     public void TriggerGlobalDeath()

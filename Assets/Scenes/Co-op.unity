@@ -3103,7 +3103,7 @@ GameObject:
   - component: {fileID: 1407746224}
   - component: {fileID: 1407746223}
   m_Layer: 0
-  m_Name: Audio Source
+  m_Name: Music
   m_TagString: 'Music '
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4813,14 +4813,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isMultiplayer: 1
   Canvas: {fileID: 1187173648}
-  TodClips:
-  - {fileID: 8300000, guid: ca5f1eef246866044914c19099d36cac, type: 3}
-  - {fileID: 8300000, guid: c0dbf5ae5e15ede4f8660e8e51a61857, type: 3}
-  - {fileID: 8300000, guid: d4c3d907f0636044380643c6f6833357, type: 3}
-  TodClipsRare:
-  - {fileID: 8300000, guid: 4c078716c8402b342873bfef9bccb436, type: 3}
-  - {fileID: 8300000, guid: 5205e4319f254e245b64319e0ff440cf, type: 3}
-  TodHalt: {fileID: 6792945845053696465}
+  deathSoundplayer: {fileID: 9146409081787041343}
 --- !u!4 &2241383215140344131
 Transform:
   m_ObjectHideFlags: 0
@@ -5231,6 +5224,7 @@ GameObject:
   - component: {fileID: 580375668759908377}
   - component: {fileID: 6792945845053696465}
   - component: {fileID: 5980138082313568048}
+  - component: {fileID: 9146409081787041343}
   m_Layer: 0
   m_Name: Kevin (Co-op)
   m_TagString: Untagged
@@ -5423,6 +5417,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Canvas: {fileID: 573454723}
   CanvasDeath: {fileID: 1187173648}
+--- !u!114 &9146409081787041343
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7191488587943974118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 467f4d15226a5f04fb5d512fd9b12466, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 6792945845053696465}
+  clips:
+  - {fileID: 8300000, guid: c0dbf5ae5e15ede4f8660e8e51a61857, type: 3}
+  - {fileID: 8300000, guid: ca5f1eef246866044914c19099d36cac, type: 3}
+  - {fileID: 8300000, guid: d4c3d907f0636044380643c6f6833357, type: 3}
+  rareclips:
+  - {fileID: 8300000, guid: 4c078716c8402b342873bfef9bccb436, type: 3}
+  - {fileID: 8300000, guid: 5205e4319f254e245b64319e0ff440cf, type: 3}
+  rarety: 0.1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

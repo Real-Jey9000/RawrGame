@@ -3577,7 +3577,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: e0e1e2986944f7a49903eccdf55df3dc, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 7c6c6ad74521f2841acd956fb4c94bdf, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -4081,7 +4081,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1365843441}
         m_TargetAssemblyTypeName: SkinManager, Assembly-CSharp
-        m_MethodName: PreviousHat
+        m_MethodName: NextHat
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4800,8 +4800,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1365843442}
   - component: {fileID: 1365843441}
-  - component: {fileID: 1365843444}
   - component: {fileID: 1365843443}
+  - component: {fileID: 1365843444}
   m_Layer: 0
   m_Name: PersistantGameManager
   m_TagString: Untagged
@@ -4858,6 +4858,10 @@ MonoBehaviour:
     uniqueId: 1008
     icon: {fileID: 21300000, guid: 4611391ab3df35f4793f123de68437a8, type: 3}
     isUnlockedByDefault: 0
+  - skinName: DaDodo
+    uniqueId: 1009
+    icon: {fileID: 21300000, guid: 27f9dfb6df510a64fb1efa3b5a892ef5, type: 3}
+    isUnlockedByDefault: 0
   jacketSkins:
   - skinName: None
     uniqueId: 0000
@@ -4895,8 +4899,11 @@ MonoBehaviour:
     uniqueId: 0008
     icon: {fileID: 21300000, guid: d1a71637b5d51314a9d03c1ab6b494d8, type: 3}
     isUnlockedByDefault: 0
-  hatChangeSound: {fileID: 1365843444}
-  jacketChangeSound: {fileID: 1365843443}
+  - skinName: StawMan
+    uniqueId: 0009
+    icon: {fileID: 21300000, guid: d92b4edb4198b8341965f81a87693984, type: 3}
+    isUnlockedByDefault: 0
+  soundPlayer: {fileID: 1365843444}
   hatSelectionButtons:
   - {fileID: 1175894899}
   - {fileID: 456150945}
@@ -4928,7 +4935,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 5806c47528004b74294edbb8dd6bb338, type: 3}
+  m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -5014,102 +5021,26 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!82 &1365843444
-AudioSource:
+--- !u!114 &1365843444
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1365843440}
   m_Enabled: 1
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: f9f5a02c70f5d024a9863c0f00ef2628, type: 3}
-  m_PlayOnAwake: 0
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 0
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
-  Pan2D: 0
-  rolloffMode: 0
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 467f4d15226a5f04fb5d512fd9b12466, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 1365843443}
+  clips:
+  - {fileID: 8300000, guid: ac5c280b17098e740944ea61827121da, type: 3}
+  - {fileID: 8300000, guid: 2982361837a106b42a9bc818f6bcb430, type: 3}
+  - {fileID: 8300000, guid: 1a2630ae623dfa34aacb1ca0b291689a, type: 3}
+  - {fileID: 8300000, guid: 375c1bd518272b746b06a443a82c78e1, type: 3}
+  rareclips: []
+  rarety: 0
 --- !u!1 &1385532011
 GameObject:
   m_ObjectHideFlags: 0

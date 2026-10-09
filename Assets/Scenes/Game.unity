@@ -2088,6 +2088,22 @@ MonoBehaviour:
     endDay: 31
     endMonth: 10
     isChecked: 0
+  - skinId: 0009
+    conditionType: 1
+    requiredScore: 0
+    startDay: 3
+    startMonth: 12
+    endDay: 3
+    endMonth: 12
+    isChecked: 0
+  - skinId: 1009
+    conditionType: 1
+    requiredScore: 0
+    startDay: 3
+    startMonth: 12
+    endDay: 3
+    endMonth: 12
+    isChecked: 0
 --- !u!1 &847358372
 GameObject:
   m_ObjectHideFlags: 0
@@ -2361,6 +2377,7 @@ GameObject:
   - component: {fileID: 920738579}
   - component: {fileID: 920738578}
   - component: {fileID: 920738580}
+  - component: {fileID: 920738581}
   m_Layer: 0
   m_Name: Kevin
   m_TagString: Untagged
@@ -2540,14 +2557,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isMultiplayer: 0
   Canvas: {fileID: 1187173648}
-  TodClips:
-  - {fileID: 8300000, guid: ca5f1eef246866044914c19099d36cac, type: 3}
-  - {fileID: 8300000, guid: c0dbf5ae5e15ede4f8660e8e51a61857, type: 3}
-  - {fileID: 8300000, guid: d4c3d907f0636044380643c6f6833357, type: 3}
-  TodClipsRare:
-  - {fileID: 8300000, guid: 4c078716c8402b342873bfef9bccb436, type: 3}
-  - {fileID: 8300000, guid: 5205e4319f254e245b64319e0ff440cf, type: 3}
-  TodHalt: {fileID: 920738578}
+  deathSoundplayer: {fileID: 920738581}
 --- !u!114 &920738576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2783,6 +2793,27 @@ MonoBehaviour:
   isMultiplayer: 0
   Player: {fileID: 920738569}
   HighScore: {fileID: 0}
+--- !u!114 &920738581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 920738569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 467f4d15226a5f04fb5d512fd9b12466, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  source: {fileID: 920738578}
+  clips:
+  - {fileID: 8300000, guid: c0dbf5ae5e15ede4f8660e8e51a61857, type: 3}
+  - {fileID: 8300000, guid: ca5f1eef246866044914c19099d36cac, type: 3}
+  - {fileID: 8300000, guid: d4c3d907f0636044380643c6f6833357, type: 3}
+  rareclips:
+  - {fileID: 8300000, guid: 4c078716c8402b342873bfef9bccb436, type: 3}
+  - {fileID: 8300000, guid: 5205e4319f254e245b64319e0ff440cf, type: 3}
+  rarety: 0.1
 --- !u!1 &983722695
 GameObject:
   m_ObjectHideFlags: 0

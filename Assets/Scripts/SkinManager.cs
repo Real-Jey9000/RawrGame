@@ -11,8 +11,7 @@ public class SkinManager : MonoBehaviour
     [SerializeField] private List<SkinItem> jacketSkins = new List<SkinItem>();
 
     [Header("Audio")]
-    [SerializeField] private AudioSource hatChangeSound;
-    [SerializeField] private AudioSource jacketChangeSound;
+    [SerializeField] private Soundplayer soundPlayer;
 
     [Header("UI Toggle Buttons")]
     [Tooltip("Objekte/Buttons, die nur aktiv sind, wenn man mehr als 1 Hat besitzt")]
@@ -137,10 +136,7 @@ public class SkinManager : MonoBehaviour
             currentHatIndex = nextIdx;
             SaveSelection(PREF_HAT_ID, hatSkins[currentHatIndex].uniqueId);
 
-            if (hatChangeSound != null)
-            {
-                hatChangeSound.Play();
-            }
+            soundPlayer.playSound(direction > 0 ? 1 : 0);
 
             if (hatImage == null) FindImagesAndApply();
             else hatImage.sprite = GetCurrentHatSprite();
@@ -157,10 +153,7 @@ public class SkinManager : MonoBehaviour
             currentJacketIndex = nextIdx;
             SaveSelection(PREF_JACKET_ID, jacketSkins[currentJacketIndex].uniqueId);
 
-            if (jacketChangeSound != null)
-            {
-                jacketChangeSound.Play();
-            }
+            soundPlayer.playSound(direction > 0 ? 2 : 3);
 
             if (jacketImage == null) FindImagesAndApply();
             else jacketImage.sprite = GetCurrentJacketSprite();
