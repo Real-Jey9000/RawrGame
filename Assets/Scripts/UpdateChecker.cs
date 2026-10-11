@@ -12,16 +12,24 @@ public class UpdateChecker : MonoBehaviour
     private const string ApiUrl = "https://api.github.com/repos/Real-Jey9000/RawrGame/releases/latest";
 
     [SerializeField] private TMP_Text updateInfoText;
-    [SerializeField] private Button updateButton;
+    [SerializeField] private Button autoUpdateButton;   // Button 1: Downloads update directly in-game
+    [SerializeField] private Button manualUpdateButton; // Button 2: Opens GitHub releases page in browser
 
     private string directDownloadUrl;
+    private string latestReleaseUrl;
 
     void Start()
     {
-        if (updateButton != null)
+        if (autoUpdateButton != null)
         {
-            updateButton.gameObject.SetActive(false);
-            updateButton.onClick.AddListener(StartDownloadUpdate);
+            autoUpdateButton.gameObject.SetActive(false);
+            autoUpdateButton.onClick.AddListener(StartDownloadUpdate);
+        }
+
+        if (manualUpdateButton != null)
+        {
+            manualUpdateButton.gameObject.SetActive(false);
+            manualUpdateButton.onClick.AddListener(OpenDownloadPage);
         }
 
         if (updateInfoText != null)
@@ -48,6 +56,10 @@ public class UpdateChecker : MonoBehaviour
 
             if (latestRelease != null && !string.IsNullOrEmpty(latestRelease.tag_name))
             {
+                // Store webpage URL for manual download button
+                latestReleaseUrl = latestRelease.html_url;
+
+                // Search for direct download asset URL
                 foreach (var asset in latestRelease.assets)
                 {
                     if (asset.name == "RawrGame.zip")
@@ -92,25 +104,34 @@ public class UpdateChecker : MonoBehaviour
     {
         if (updateInfoText != null)
         {
-            updateInfoText.text = $"Neue Version {newVer} verfügbar! (Aktuell: {currentVer})\nKlicke zum Aktualisieren.";
+            updateInfoText.text = $"New version {newVer} available! (Current: {currentVer})";
         }
 
-        if (updateButton != null)
-        {
-            updateButton.gameObject.SetActive(true);
-        }
+        // Show both buttons when an update is found
+        if (autoUpdateButton != null) autoUpdateButton.gameObject.SetActive(true);
+        if (manualUpdateButton != null) manualUpdateButton.gameObject.SetActive(true);
     }
 
     private void StartDownloadUpdate()
     {
         if (string.IsNullOrEmpty(directDownloadUrl))
         {
-            if (updateInfoText != null) updateInfoText.text = "Keine Download-Datei gefunden!";
+            if (updateInfoText != null) updateInfoText.text = "No direct download file (RawrGame.zip) found in release!";
             return;
         }
 
-        if (updateButton != null) updateButton.gameObject.SetActive(false);
+        if (autoUpdateButton != null) autoUpdateButton.gameObject.SetActive(false);
+        if (manualUpdateButton != null) manualUpdateButton.gameObject.SetActive(false);
+
         StartCoroutine(DownloadAndInstallRoutine());
+    }
+
+    private void OpenDownloadPage()
+    {
+        if (!string.IsNullOrEmpty(latestReleaseUrl))
+        {
+            Application.OpenURL(latestReleaseUrl);
+        }
     }
 
     private IEnumerator DownloadAndInstallRoutine()
@@ -121,7 +142,7 @@ public class UpdateChecker : MonoBehaviour
         if (Directory.Exists(extractPath)) Directory.Delete(extractPath, true);
         Directory.CreateDirectory(extractPath);
 
-        if (updateInfoText != null) updateInfoText.text = "Lade Update herunter...";
+        if (updateInfoText != null) updateInfoText.text = "Downloading update...";
 
         using (UnityWebRequest request = UnityWebRequest.Get(directDownloadUrl))
         {
@@ -130,12 +151,16 @@ public class UpdateChecker : MonoBehaviour
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                if (updateInfoText != null) updateInfoText.text = "Download fehlgeschlagen: " + request.error;
+                if (updateInfoText != null) updateInfoText.text = "Download failed: " + request.error;
+
+                // Re-enable buttons on error
+                if (autoUpdateButton != null) autoUpdateButton.gameObject.SetActive(true);
+                if (manualUpdateButton != null) manualUpdateButton.gameObject.SetActive(true);
                 yield break;
             }
         }
 
-        if (updateInfoText != null) updateInfoText.text = "Entpacke Update...";
+        if (updateInfoText != null) updateInfoText.text = "Extracting update...";
 
         try
         {
@@ -144,11 +169,14 @@ public class UpdateChecker : MonoBehaviour
         }
         catch (Exception ex)
         {
-            if (updateInfoText != null) updateInfoText.text = "Fehler beim Entpacken: " + ex.Message;
+            if (updateInfoText != null) updateInfoText.text = "Extraction error: " + ex.Message;
+
+            if (autoUpdateButton != null) autoUpdateButton.gameObject.SetActive(true);
+            if (manualUpdateButton != null) manualUpdateButton.gameObject.SetActive(true);
             yield break;
         }
 
-        if (updateInfoText != null) updateInfoText.text = "Update bereit! Spiel wird neu gestartet...";
+        if (updateInfoText != null) updateInfoText.text = "Update ready! Restarting game...";
 
         CreateAndRunUpdaterScript(extractPath);
     }
@@ -157,13 +185,27 @@ public class UpdateChecker : MonoBehaviour
     {
 #if UNITY_STANDALONE_WIN
         string gameExeDir = Directory.GetParent(Application.dataPath).FullName;
+        string exeName = "RawrGame.exe";
+        string fullExePath = Path.Combine(gameExeDir, exeName);
         string batPath = Path.Combine(Application.persistentDataPath, "update.bat");
 
         string batchContent = $@"
 @echo off
-timeout /t 2 /nobreak > nul
-xcopy /s /y ""{extractPath}\*"" ""{gameExeDir}\""
-start """" ""{Application.dataPath.Replace("_Data", "")}.exe""
+chcp 65001 > nul
+echo Waiting for the game to close...
+timeout /t 3 /nobreak > nul
+
+echo Copying update files to: {gameExeDir}
+if exist ""{extractPath}\RawrGame\*"" (
+    xcopy /s /y /e ""{extractPath}\RawrGame\*"" ""{gameExeDir}\""
+) else (
+    xcopy /s /y /e ""{extractPath}\*"" ""{gameExeDir}\""
+)
+
+echo Restarting game...
+start """" ""{fullExePath}""
+
+rmdir /s /q ""{extractPath}""
 del ""%~f0""
 ";
 
@@ -178,6 +220,7 @@ del ""%~f0""
     private class GitHubRelease
     {
         public string tag_name;
+        public string html_url;
         public GitHubAsset[] assets;
     }
 
